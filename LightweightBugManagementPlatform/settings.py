@@ -118,7 +118,9 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
-SMS = 0
+AWS_ACCESS_KEY_ID = "test"
+AWS_SECRET_ACCESS_KEY = "test"
+REGION_NAME = "test"
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
