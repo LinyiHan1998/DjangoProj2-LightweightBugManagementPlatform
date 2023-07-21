@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <link rel="stylesheet" href="https://cdn.bootcdn.net/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css">
+    <style>
+        .account {
+            width: 400px;
+            margin: 0 auto
+        }
+    </style>
+</head>
+<body>
+<div class="account">
+    <form id="formModal" novalidate>
+        {% for field in form %}
+            {% if field.name == 'code' %}
+                <div class="form-group">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+
+                    <div class="clearfix">
+                        <div class="col-md-5" style="padding-left: 0">{{ field }}
+                        {{ field.errors }}
+                    <span class="error-msg" style="color: red; position: absolute"></span></div>
+
+
+                        <div class="col-md-5" style="padding-left: 0">
+                            <input type="button" class="btn btn-default" value="obtain Code" id="btnObtainCode">
+                        </div>
+                        <div class="col-md-2" style="padding-left: 0">
+                            <span style="color: hotpink" id="numTime"></span>
+                        </div>
+                    </div>
+
+
+                </div>
+
+            {% else %}
+                <div class="form-group">
+                    <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                    {{ field }}
+                    {{ field.errors }}
+                    <span class="error-msg" style="color: red; position: absolute"></span>
+                </div>
+            {% endif %}
+        {% endfor %}
+        <input id="btnSub" type="button" name="User" class="btn btn-primary" value="submit"/>
+    </form>
+
+</div>
+
+
+<script src="https://cdn.bootcdn.net/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+
+<script type="text/javascript">
+    $(function () {
+        btnObtainCodeEvent();
+        btnSubEvent();
+    })
+
+    function btnObtainCodeEvent() {
+        $("#btnObtainCode").click(function () {
+            var num = 60;
+            var interval = setInterval(function () {
+                if (num == 0) {
+                    clearInterval(interval)
+                }
+                numTime.innerHTML = num--;
+
+            }, 1000);
+            doObtainCode();
+        })
+    }
+
+    function btnSubEvent() {
+        $('#btnSub').click(function () {
+            doSubmit();
+        })
+    }
+
+    function doSubmit() {
+        $.ajax({
+            url: '/app01/register/',
+            type: "post",
+            data: $("#formModal").serialize(),
+            dataType: "JSON",
+            success: function (res) {
+                if (res.status) {
+                    $("#formModal")[0].reset();
+                    location.reload();
+                } else {
+                    if (res.tips) {
+                        alert(res.tips);
+                    } else {
+                        $.each(res.error, function (name, data) {
+                            console.log(name, data);
+                            $("#id_" + name).next().text(data[0])
+                        })
+                    }
+                }
+            }
+
+        })
+    }
+
+    function doObtainCode() {
+        $.ajax({
+            url: '/app01/send/sms/',
+            type: "post",
+            data: $("#formModal").serialize(),
+            dataType: "Json",
+        })
+
+    }
+
+</script>
+</body>
+</html>
