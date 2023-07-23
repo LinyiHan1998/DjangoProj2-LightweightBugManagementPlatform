@@ -13,7 +13,7 @@
 </head>
 <body>
 <div class="account">
-    <form id="formModal" novalidate>
+    <form id="formModal" novalidate >
         {% for field in form %}
             {% if field.name == 'code' %}
                 <div class="form-group">
@@ -81,7 +81,7 @@
 
     function doSubmit() {
         $.ajax({
-            url: '/app01/register/',
+            url: '/register/',
             type: "post",
             data: $("#formModal").serialize(),
             dataType: "JSON",
@@ -106,7 +106,7 @@
 
     function doObtainCode() {
         $.ajax({
-            url: '/app01/send/sms/',
+            url: '/send/sms/',
             type: "post",
             data: $("#formModal").serialize(),
             dataType: "Json",

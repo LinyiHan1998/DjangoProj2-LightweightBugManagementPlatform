@@ -1,7 +1,3 @@
-import boto3
-import redis
-import json
-import random
 from django import forms
 from django.conf import settings
 from django.core.exceptions import ValidationError
@@ -11,9 +7,9 @@ from django.core.validators import RegexValidator
 from django.views.decorators.csrf import csrf_exempt
 
 from app01.utils.aws.awsSNS import SnsWrapper
+from web import models
+import redis
 
-from app01 import models
-# Create your views here.
 class RegisterModelForm(forms.ModelForm):
     mobile_phone = forms.CharField(label='Mobile Phone',validators=[RegexValidator('^(\\+)?([1])\\d{10}$','invalid number'),])
     password = forms.CharField(label='Password',widget=forms.PasswordInput())
@@ -37,49 +33,19 @@ class RegisterModelForm(forms.ModelForm):
             host='127.0.0.1',
             port=6379
         )
-        code = r.get(self.cleaned_data.get("email"))
-        print(self.cleaned_data.get("code")[0])
-        if code != self.cleaned_data.get("code")[0]:
+        code = str(r.get(self.cleaned_data.get("email")),'utf-8')
+        print(self.cleaned_data.get("code"))
+        print(code)
+        if code != self.cleaned_data.get("code"):
             raise ValidationError("Code doesn't match")
         return self.cleaned_data.get("code")
-@csrf_exempt
-def send_sms(request):
-    print(request.POST)
-    code = str(random.randint(10000000,99999999))
-    session = boto3.Session(
-        aws_access_key_id=settings.AWS_ACCESS_KEY_ID,
-        aws_secret_access_key=settings.AWS_SECRET_ACCESS_KEY,
-        region_name=settings.REGION_NAME
-    )
-    sns_wrapper = SnsWrapper(session.resource("sns"))
-    topic = sns_wrapper.sns_resource.create_topic(Name="RequirementTacer")
-    # topic_name = "RequirementTacer"
-    print(code)
-    text_send = sns_wrapper.publish_message(topic, code,{"key":'str'})
-    r = redis.Redis(
-        host = '127.0.0.1',
-        port=6379
-    )
-    email = request.POST.get('email')
-    r.set(email,code,60)
-    return HttpResponse('...')
 
+class SmsForm(forms.Form):
+    email = forms.CharField(label='email',validators=[RegexValidator('^[a-zA-Z0-9_.-]+@[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)*\.[a-zA-Z0-9]{2,6}$','Invalid Email'),])
 
-@csrf_exempt
-def register(request):
-    if request.method == 'GET':
-        form = RegisterModelForm()
-        return render(request,'register.html',{'form':form})
-
-    form = RegisterModelForm(data=request.POST)
-    if form.is_valid():
-        form.save()
-        return JsonResponse({'status':True})
-    data_dict = {
-        'status':False,
-        'error':form.errors
-    }
-    json_string = json.dumps(data_dict, ensure_ascii=False)
-    return HttpResponse(json_string)
-
-
+    def clean_email(self):
+        email = self.cleaned_data.get('email')
+        exists = models.UserInfo.objects.filter(email=email).exists()
+        if exists:
+            raise ValidationError('Email already exist')
+        return email

@@ -1,0 +1,131 @@
+{% extends 'web/layout/basic.html' %}
+{% load static %}
+{% block title %} User Registration {% endblock %}
+
+{% block css %}
+    <link rel="stylesheet" href="{% static 'web/css/account.css' %}">
+{% endblock %}
+
+{% block content %}
+    <div class="account">
+        <div class="title">User Registration</div>
+        <form id="formModal" novalidate>
+            {% for field in form %}
+                {% if field.name == 'code' %}
+                    <div class="form-group">
+                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+
+                        <div class="clearfix">
+                            <div class="col-md-8" style="padding-left: 0">{{ field }}
+                                {{ field.errors }}
+                                <span class="error-msg" style="color: red; position: absolute"></span></div>
+
+
+                            <div class="col-md-4" style="padding-left: 0">
+                                <input type="button" class="btn btn-default" value="obtain Code" id="btnObtainCode">
+                            </div>
+                        </div>
+
+
+                    </div>
+
+                {% else %}
+                    <div class="form-group">
+                        <label for="{{ field.id_for_label }}">{{ field.label }}</label>
+                        {{ field }}
+                        {{ field.errors }}
+                        <span class="error-msg" style="color: red; position: absolute"></span>
+                    </div>
+                {% endif %}
+            {% endfor %}
+            <input id="btnSub" type="button" name="User" class="btn btn-primary" value="Register"/>
+        </form>
+
+    </div>
+
+{% endblock %}
+
+{% block js %}
+    <script type="text/javascript">
+        $(function () {
+            btnObtainCodeEvent();
+            btnSubEvent();
+        })
+
+        function btnObtainCodeEvent() {
+            $("#btnObtainCode").click(function () {
+                $('.error-msg').empty()
+                doObtainCode();
+            })
+        }
+
+        function btnSubEvent() {
+            $('#btnSub').click(function () {
+                doSubmit();
+            })
+        }
+
+
+
+        function doSubmit() {
+            $.ajax({
+                url: '/register/',
+                type: "post",
+                data: $("#formModal").serialize(),
+                dataType: "JSON",
+                success: function (res) {
+                    if (res.status) {
+                        $("#formModal")[0].reset();
+                        location.reload();
+                    } else {
+                        if (res.tips) {
+                            alert(res.tips);
+                        } else {
+                            $.each(res.error, function (name, data) {
+                                console.log(name, data);
+                                $("#id_" + name).next().text(data[0])
+                            })
+                        }
+                    }
+                }
+
+            })
+        }
+
+        function doObtainCode() {
+            var email = $('#id_email').val();
+            console.log(email)
+            $.ajax({
+                url: '/send/sms/',
+                type: "get",
+                data: {email:email},
+                dataType: "Json",
+                success: function (res) {
+                    var $btnObtainCode = $('#btnObtainCode');
+                    $btnObtainCode.prop('disabled',true)
+                    if (res.status) {
+                        var num = 60;
+                        var interval = setInterval(function () {
+                            $btnObtainCode.val(num + 's to resend');
+                            if (num == 0) {
+                                clearInterval(interval);
+                                $btnObtainCode.val('Obtain Code').prop('diabled',false);
+                            }
+
+                            num = num-1;
+
+                        }, 1000);
+
+                    }else{
+                            $.each(res.error, function (name, data) {
+                                console.log(name, data);
+                                $("#id_" + name).next().text(data[0])
+                            })
+                        }
+                }
+            })
+
+        }
+
+    </script>
+{% endblock %}
