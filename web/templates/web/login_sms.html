@@ -1,6 +1,6 @@
 {% extends 'web/layout/basic.html' %}
 {% load static %}
-{% block title %} User Registration {% endblock %}
+{% block title %} Login with Email {% endblock %}
 
 {% block css %}
     <link rel="stylesheet" href="{% static 'web/css/account.css' %}">
@@ -8,7 +8,7 @@
 
 {% block content %}
     <div class="account">
-        <div class="title">User Registration</div>
+        <div class="title"> Login with Email </div>
         <form id="formModal" novalidate>
             {% for field in form %}
                 {% if field.name == 'code' %}
@@ -38,7 +38,7 @@
                     </div>
                 {% endif %}
             {% endfor %}
-            <input id="btnSub" type="button" name="User" class="btn btn-primary" value="Register"/>
+            <input id="btnSub" type="button" name="User" class="btn btn-primary" value="Log in"/>
         </form>
 
     </div>
@@ -68,7 +68,7 @@
         function doSubmit() {
             $(".error_msg").empty()
             $.ajax({
-                url: '/register/',
+                url: '/login/sms',
                 type: "post",
                 data: $("#formModal").serialize(),
                 dataType: "JSON",
@@ -94,7 +94,7 @@
             var email = $('#id_email').val();
             console.log(email)
             $.ajax({
-                url: 'login/send/sms/',
+                url: '/login/send/sms/',
                 type: "get",
                 data: {email:email},
                 dataType: "Json",
@@ -115,6 +115,7 @@
                         }, 1000);
 
                     }else{
+                        $btnObtainCode.val('Obtain Code').prop('diabled',false);
                             $.each(res.error, function (name, data) {
                                 console.log(name, data);
                                 $("#id_" + name).next().text(data[0])

@@ -10,7 +10,7 @@ from django.shortcuts import render,HttpResponse
 from django.core.validators import RegexValidator
 from django.views.decorators.csrf import csrf_exempt
 
-from app01.utils.aws.awsSNS import SnsWrapper
+from utils.aws.awsSNS import SnsWrapper
 
 from app01 import models
 # Create your views here.
