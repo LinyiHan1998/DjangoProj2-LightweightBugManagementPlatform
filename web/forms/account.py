@@ -93,3 +93,23 @@ class LoginForm(Bootstrap.BootstrapForm):
         if code != self.cleaned_data.get("code"):
             raise ValidationError("Code doesn't match")
         return self.cleaned_data.get("code")
+
+
+class LoginUserForm(Bootstrap.BootstrapForm):
+    username = forms.CharField(label='Username')
+    password = forms.CharField(label='Password',widget=forms.PasswordInput())
+    code = forms.CharField(label='Verify Code', widget=forms.TextInput())
+
+    def clean_username(self):
+        username = self.cleaned_data.get("username")
+        exists = models.UserInfo.objects.filter(username = username).exists()
+        if not exists:
+            raise ValidationError("Username does not exists")
+        return username
+    def clean_password(self):
+        pwd = md5(self.cleaned_data.get("password"))
+        username = self.cleaned_data.get("username")
+        exists = models.UserInfo.objects.filter(username=username,password=pwd).exists()
+        if not exists:
+           raise ValidationError("Username and Password does not match")
+        return pwd

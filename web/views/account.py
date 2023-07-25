@@ -2,12 +2,15 @@ import random
 import redis
 import boto3
 import json
+
+from io import BytesIO
 from django.conf import settings
 from django.http import JsonResponse
 from django.shortcuts import HttpResponse,render
-from web.forms.account import RegisterModelForm, SmsForm, LoginForm, LoginSmsForm
+from web.forms.account import RegisterModelForm, SmsForm, LoginForm, LoginSmsForm, LoginUserForm
 from django.views.decorators.csrf import csrf_exempt
 from utils.aws.awsSNS import SnsWrapper
+from utils.code import check_code
 
 
 @csrf_exempt
@@ -18,7 +21,7 @@ def register(request):
     form = RegisterModelForm(data=request.POST)
     if form.is_valid():
         form.save()
-        return JsonResponse({'status':True,'data':'/login/'})
+        return JsonResponse({'status':True,'data':'/login/username'})
     data_dict = {
         'status':False,
         'error':form.errors
@@ -95,3 +98,24 @@ def login_sms(request):
     if form.is_valid():
         return JsonResponse({'status':True,'data':'/register/'})
     return JsonResponse({'status':False,'error':form.errors})
+
+
+def login(request):
+    if request.method =='GET':
+        form = LoginUserForm()
+        return render(request,'web/login.html',{'form':form})
+    form = LoginUserForm(data= request.POST)
+    if form.is_valid():
+        print(1)
+        return HttpResponse('...')
+    return render(request,'web/login.html',{'form':form})
+
+def image_code(request):
+    image_obj,code = check_code()
+    request.session['image_code'] = code
+    request.session.set_expiry(60)
+    stream = BytesIO()
+    image_obj.save(stream,'png')
+
+
+    return HttpResponse(stream.getvalue())

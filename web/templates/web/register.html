@@ -94,7 +94,7 @@
             var email = $('#id_email').val();
             console.log(email)
             $.ajax({
-                url: 'login/send/sms/',
+                url: '/send/sms/',
                 type: "get",
                 data: {email:email},
                 dataType: "Json",
@@ -115,6 +115,7 @@
                         }, 1000);
 
                     }else{
+                        $btnObtainCode.val('Obtain Code').prop('disabled',false);
                             $.each(res.error, function (name, data) {
                                 console.log(name, data);
                                 $("#id_" + name).next().text(data[0])
