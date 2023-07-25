@@ -6,11 +6,13 @@ import json
 from io import BytesIO
 from django.conf import settings
 from django.http import JsonResponse
-from django.shortcuts import HttpResponse,render
+from django.shortcuts import HttpResponse,render,redirect
+from django.db.models import Q
 from web.forms.account import RegisterModelForm, SmsForm, LoginForm, LoginSmsForm, LoginUserForm
 from django.views.decorators.csrf import csrf_exempt
 from utils.aws.awsSNS import SnsWrapper
 from utils.code import check_code
+from web import models
 
 
 @csrf_exempt
@@ -96,18 +98,29 @@ def login_sms(request):
         return render(request,'web/login_sms.html',{'form':form})
     form = LoginForm(data=request.POST)
     if form.is_valid():
+        email=form.cleaned_data['email']
+        user_obj = models.UserInfo.objects.filter(email=email).first()
+        request.session["user_id"] = user_obj.id
+        request.session.set_expiry(60 * 60 * 24 * 7)
         return JsonResponse({'status':True,'data':'/register/'})
     return JsonResponse({'status':False,'error':form.errors})
 
 
 def login(request):
     if request.method =='GET':
-        form = LoginUserForm()
+        form = LoginUserForm(request)
         return render(request,'web/login.html',{'form':form})
-    form = LoginUserForm(data= request.POST)
+    form = LoginUserForm(request,data= request.POST)
     if form.is_valid():
-        print(1)
-        return HttpResponse('...')
+        username = form.cleaned_data['username']
+        password = form.cleaned_data['password']
+        user_obj = models.UserInfo.objects.filter(Q(email=username)|Q(username=username)).filter(password=password).first()
+        print(user_obj)
+        if user_obj:
+            request.session['user_id'] = user_obj.id
+            request.session.set_expiry(60*60*24*7)
+            return redirect('/index/')
+        form.add_error('username','incorrect username and password')
     return render(request,'web/login.html',{'form':form})
 
 def image_code(request):
@@ -119,3 +132,6 @@ def image_code(request):
 
 
     return HttpResponse(stream.getvalue())
+def logout(request):
+    request.session.flush()
+    return redirect('index')

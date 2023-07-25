@@ -96,20 +96,24 @@ class LoginForm(Bootstrap.BootstrapForm):
 
 
 class LoginUserForm(Bootstrap.BootstrapForm):
-    username = forms.CharField(label='Username')
+    username = forms.CharField(label='Username or Email')
     password = forms.CharField(label='Password',widget=forms.PasswordInput())
     code = forms.CharField(label='Verify Code', widget=forms.TextInput())
 
-    def clean_username(self):
-        username = self.cleaned_data.get("username")
-        exists = models.UserInfo.objects.filter(username = username).exists()
-        if not exists:
-            raise ValidationError("Username does not exists")
-        return username
+    def __init__(self, request, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.request = request
+
     def clean_password(self):
         pwd = md5(self.cleaned_data.get("password"))
-        username = self.cleaned_data.get("username")
-        exists = models.UserInfo.objects.filter(username=username,password=pwd).exists()
-        if not exists:
-           raise ValidationError("Username and Password does not match")
+
         return pwd
+
+    def clean_code(self):
+        code = self.cleaned_data.get("code")
+        session_code = self.request.session["image_code"]
+        if not session_code:
+            raise ValidationError("Code expired")
+        if code.strip().upper() != session_code.strip().upper():
+            raise ValidationError("Incorrect Code")
+        return code

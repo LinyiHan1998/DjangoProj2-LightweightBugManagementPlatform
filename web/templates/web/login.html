@@ -1,6 +1,6 @@
 {% extends 'web/layout/basic.html' %}
 {% load static %}
-{% block title %} Login with Username {% endblock %}
+{% block title %} Login with Password {% endblock %}
 
 {% block css %}
     <link rel="stylesheet" href="{% static 'web/css/account.css' %}">
@@ -8,7 +8,7 @@
 
 {% block content %}
     <div class="account">
-        <div class="title"> Login with Username </div>
+        <div class="title"> Login with Password </div>
         <form id="formModal" novalidate method="post">
         {% csrf_token %}
             {% for field in form %}
@@ -18,11 +18,11 @@
 
                         <div class="clearfix">
                             <div class="col-xs-7" style="padding-left: 0">{{ field }}
-                                <span class="error-msg">{{ field.errors }}</span>
+                                <span class="error-msg" >{{ field.errors.0 }}</span>
                             </div>
 
                             <div class="col-xs-4" style="padding-left: 0">
-                                <img src="{% url 'image_code' %}">
+                                <img src="{% url 'image_code' %}" id="imageCode" title="Click to change photo">
                             </div>
                         </div>
 
@@ -33,12 +33,21 @@
                     <div class="form-group">
                         <label for="{{ field.id_for_label }}">{{ field.label }}</label>
                         {{ field }}
-                        {{ field.errors }}
-                        <span class="error-msg" style="color: red; position: absolute"></span>
+                        <span class="error-msg" style="color: red; position: absolute">{{ field.errors.0 }}</span>
                     </div>
                 {% endif %}
             {% endfor %}
-            <input id="btnSub" type="submit" name="User" class="btn btn-primary" value="Log in"/>
+        <div class="checkbox">
+            <div style="float: right">
+                <a href="{% url 'login_sms' %}">Login with SMS verification code</a>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-xs-3">
+                <input id="btnSub" type="submit" name="User" class="btn btn-primary" value="Log in"/>
+            </div>
+        </div>
+
         </form>
 
     </div>
@@ -46,5 +55,13 @@
 {% endblock %}
 
 {% block js %}
+    <script>
+    $(function(){
+        $('#imageCode').click(function(){
+            var oldsrc = $(this).attr('src');
+            $(this).attr('src',oldsrc+"?");
+        })
+    })
+    </script>
 
 {% endblock %}
