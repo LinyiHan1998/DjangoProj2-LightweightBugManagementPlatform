@@ -63,6 +63,9 @@ class Project(models.Model):
     creator = models.ForeignKey(verbose_name='Creator',to='UserInfo')
     create_datetime = models.DateTimeField(verbose_name='Create Time', auto_now_add=True)
 
+    #定义多对多关系，可以方便联表查询。如果没有through会自动建新表。through表示把新表内容放在through关联的表里。好处是关联的表可以定义原本表没有的字段
+    #project_user = models.ManyToManyField(to='UserInfo',through='ProjectUser',through_fields=('project','user'))
+
 class ProjectUser(models.Model):
     userId = models.ForeignKey(verbose_name='User',to='UserInfo',on_delete=models.CASCADE)
     project = models.ForeignKey(verbose_name='Project',to='Project')

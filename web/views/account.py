@@ -2,6 +2,8 @@ import random
 import redis
 import boto3
 import json
+import uuid
+import datetime
 
 from io import BytesIO
 from django.conf import settings
@@ -22,7 +24,17 @@ def register(request):
         return render(request,'web/register.html',{'form':form})
     form = RegisterModelForm(data=request.POST)
     if form.is_valid():
-        form.save()
+        instance = form.save()
+        price_policy = models.PriceStrategy.objects.filter(category=1,title='Free').First()
+        models.Transaction.objects.create(
+            status=1,
+            userId=instance,
+            price_strategy=price_policy,
+            paidAmt=0,
+            startTime=datetime.datetime.now(),
+            amtYear=0,
+            orderId=str(uuid.uuid4()),
+        )
         return JsonResponse({'status':True,'data':'/login/username'})
     data_dict = {
         'status':False,
