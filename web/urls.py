@@ -1,5 +1,5 @@
 from django.conf.urls import url,include
-from web.views import account,home
+from web.views import account,home, project
 
 urlpatterns = [
     url(r'^register/', account.register, name='register'),
@@ -10,4 +10,8 @@ urlpatterns = [
     url(r'^login/send/sms/', account.login_send_sms, name='login_send_sms'),
     url(r'^index/', home.index, name='index'),
     url(r'^logout/', account.logout, name='logout'),
+
+    #Managing Projects
+    url(r'^project/list', project.project_list, name='project_list'),
+
 ]

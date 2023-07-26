@@ -7,6 +7,8 @@ class UserInfo(models.Model):
     mobile_phone = models.CharField(verbose_name='mobile phone',max_length=32)
     password = models.CharField(verbose_name='password',max_length=32)
 
+    #price_stategy = models.ForeignKey(verbose_name='price_strategy',to='PriceStrategy',null=True,blank=True)
+
 class PriceStrategy(models.Model):
     category_choices=(
         (1,'Free'),

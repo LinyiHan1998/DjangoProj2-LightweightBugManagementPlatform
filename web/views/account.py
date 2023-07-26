@@ -25,7 +25,7 @@ def register(request):
     form = RegisterModelForm(data=request.POST)
     if form.is_valid():
         instance = form.save()
-        price_policy = models.PriceStrategy.objects.filter(category=1,title='Free').First()
+        price_policy = models.PriceStrategy.objects.filter(category=1,title='Free').first()
         models.Transaction.objects.create(
             status=1,
             userId=instance,

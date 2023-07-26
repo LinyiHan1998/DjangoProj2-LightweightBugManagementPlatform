@@ -133,6 +133,18 @@ REGION_NAME = "test"
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+####### Login white list #########
+WHITE_REGEX_LIST = [
+    "/register/",
+    "/login/sms/",
+    "/send/sms/",
+    "/login/send/sms/",
+    "/login/username",
+    "/image/code",
+    "/index/",
+]
+
+
 try:
     from .local_settings import *
 except ImportError:
