@@ -1,4 +1,5 @@
 from django.db import models
+from datetime import datetime
 
 # Create your models here.
 class UserInfo(models.Model):
@@ -6,3 +7,5 @@ class UserInfo(models.Model):
     email = models.EmailField(verbose_name='email',max_length=32)
     mobile_phone = models.CharField(verbose_name='mobile phone',max_length=32)
     password = models.CharField(verbose_name='password',max_length=32)
+
+
