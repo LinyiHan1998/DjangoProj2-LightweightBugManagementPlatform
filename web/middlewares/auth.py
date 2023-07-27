@@ -5,9 +5,11 @@ from django.utils.deprecation import MiddlewareMixin
 from web import models
 
 class TracerRequest(object):
+    #将项目、用户、价格信息放到request的tracer中
     def __init__(self):
         self.user = None
         self.price_strategy = None
+        self.project = None
 class AuthMiddleware(MiddlewareMixin):
     def process_request(self,request):
 
@@ -37,3 +39,21 @@ class AuthMiddleware(MiddlewareMixin):
 
         tracer_obj.price_strategy = transction_obj.price_strategy
         request.tracer = tracer_obj
+
+    def process_view(self,request,view,args,kwargs):
+        #判断url是否以manage开头
+        if not request.path_info.startswith('/manage/'):
+            return
+        #project_id由当前用户创建或参与
+        project_id = kwargs.get('project_id')
+        user = request.tracer.user
+        project_obj = models.Project.objects.filter(creator=user,id=project_id).first()
+        if project_obj:
+            request.tracer.project = project_obj
+            return
+        project_user_obj = models.ProjectUser.objects.filter(userId=user,project_id = project_id).first()
+        if project_user_obj:
+            request.tracer.project = project_user_obj.project
+            return
+        #url 以manage开头，且非当前用户创建或参与，则重定向到项目列表
+        return redirect('project_list')
