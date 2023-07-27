@@ -29,15 +29,13 @@
         <!-- Collect the nav links, forms, and other content for toggling -->
 
         <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-            {% all_project_list request %}
-            {% if request.tracer.project %}
             <ul class="nav navbar-nav">
-                <li><a href="#">Dashboard</a></li>
-                <li><a href="#">wiki</a></li>
-                <li><a href="#">Help Documentation</a></li>
-                <li><a href="#">Price</a></li>
+                {% all_project_list request %}
+                {% if request.tracer.project %}
+                    {% manage_menu_list request %}
+                {% endif %}
             </ul>
-            {% endif %}
+
 
             <ul class="nav navbar-nav navbar-right">
                 <li><a href="#">Bench </a></li>
