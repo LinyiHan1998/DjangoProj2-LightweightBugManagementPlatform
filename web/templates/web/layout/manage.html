@@ -1,4 +1,5 @@
 {% load static %}
+{% load project %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,16 +7,12 @@
     <title>{% block title %}{% endblock %}</title>
     <link rel="stylesheet" href="{% static 'web/plugin/bootstrap/css/bootstrap.min.css' %}">
     <link rel="stylesheet" href="{% static 'web/plugin/font-awesome/css/font-awesome.min.css' %}">
-    <link rel="stylesheet" href="{% static 'web/css/account.css' %}">
-    <style>
-        .navbar-inverse {
-            border-radius: 0;
-        }
-    </style>
+    <link rel="stylesheet" href="{% static 'web/css/manage.css' %}">
+
     {% block css %}{% endblock %}
 </head>
 <body>
-<nav class="navbar navbar-inverse">
+<nav class="navbar navbar-av">
     <div class="container-fluid">
         <!-- Brand and toggle get grouped for better mobile display -->
         <div class="navbar-header">
@@ -32,18 +29,7 @@
         <!-- Collect the nav links, forms, and other content for toggling -->
 
         <div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
-            <ul class="nav navbar-nav">
-                <li class="dropdown">
-                    <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true"
-                       aria-expanded="false">Project <span class="caret"></span></a>
-                    <ul class="dropdown-menu">
-                        <li><a href="{% url 'index' %}">Home Page</a></li>
-                        <li><a href="{% url 'logout' %}">Log out</a></li>
-                    </ul>
-                </li>
-
-
-            </ul>
+            {% all_project_list request %}
             <ul class="nav navbar-nav navbar-right">
                 <li><a href="#">Bench </a></li>
                 <li><a href="#">Calendar</a></li>
