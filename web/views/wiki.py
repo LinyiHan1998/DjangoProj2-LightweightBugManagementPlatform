@@ -32,3 +32,7 @@ def wiki_catalog(request,project_id):
     data = models.Wiki.objects.filter(project_id=project_id).values("id","title","parent_id").order_by('depth','id')
     print(data)
     return JsonResponse({'status':True,'data':list(data)})
+
+def wiki_delete(request,project_id,wiki_id):
+    models.Wiki.objects.filter(id=wiki_id,project_id=project_id).first().delete()
+    return render(request,'web/wiki.html')
