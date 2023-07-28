@@ -1,5 +1,7 @@
 {% extends 'web/layout/manage.html' %}
+{% load static %}
 {% block css %}
+    <link rel="stylesheet" href="{% static 'web/plugin/editor-md/css/editormd.min.css' %}">
     <style>
         .panel-default {
             margin-top: 10px;
@@ -19,6 +21,7 @@
             border-right: 1px solid #dddddd;
             min-height: 500px;
         }
+
         .title-list ul {
             padding-left: 15px;
         }
@@ -56,11 +59,20 @@
                     <form method="post">
                         {% csrf_token %}
                         {% for item in form %}
-                            <div class="form-group">
-                                <label for="{{ item.id_for_label }}">{{ item.label }}</label>
-                                {{ item }}
-                                <span class="error-msg">{{ item.errors.0 }}</span>
-                            </div>
+                            {% if item.name == 'content' %}
+                                <div class="form-group">
+                                    <label for="{{ item.id_for_label }}">{{ item.label }}</label>
+                                    <div id="Editor">{{ item }}</div>
+                                    <span class="error-msg">{{ item.errors.0 }}</span>
+                                </div>
+                            {% else %}
+                                <div class="form-group">
+                                    <label for="{{ item.id_for_label }}">{{ item.label }}</label>
+                                    {{ item }}
+                                    <span class="error-msg">{{ item.errors.0 }}</span>
+                                </div>
+                            {% endif %}
+
                         {% endfor %}
                         <input type="submit" class="btn btn-primary" value="Submit">
                     </form>
@@ -72,11 +84,13 @@
 {% endblock %}
 
 {% block js %}
+    <script src="{% static 'web/plugin/editor-md/editormd.min.js' %}"></script>
     <script type="text/javascript">
         var WIKI_DETAIL_URL = "{% url 'wiki' project_id=request.tracer.project.id %}";
         $(function () {
             initCatalog();
-        })
+            initEditorMd();
+        });
 
         function initCatalog() {
             $.ajax({
@@ -100,6 +114,14 @@
                         alert("Initialization fails")
                     }
                 }
+            })
+        }
+
+        function initEditorMd(){
+            editormd('Editor',{
+                placeholder: "Please type in content",
+                height:500,
+                path:"{% static 'web/plugin/editor-md/lib/' %}"
             })
         }
     </script>
