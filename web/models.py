@@ -84,6 +84,10 @@ class Wiki(models.Model):
     project = models.ForeignKey(verbose_name='Project',to='Project')
     title = models.CharField(verbose_name='Title',max_length=32)
     content = models.TextField(verbose_name='Content')
+
+    depth=models.IntegerField(verbose_name='level',default=1)
     #实现多级评论，parent字段需要关联上级的ID，所以使用自关联。自关联可以 to='Wiki'也可以to='self'
     #related_name用于反向关联，parent评论找子对象
     parent = models.ForeignKey(verbose_name='Parent File',to='Wiki',null=True,blank=True,related_name='children')
+    def __str__(self):
+        return self.title

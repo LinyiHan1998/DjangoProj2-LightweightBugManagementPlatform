@@ -1,0 +1,94 @@
+{% extends 'web/layout/manage.html' %}
+{% block css %}
+        <style>
+            .panel-default {
+                margin-top: 10px;
+            }
+
+            .panel-body {
+                padding: 0;
+            }
+
+            .panel-default .panel-heading {
+                display: flex;
+                flex-direction: row;
+                justify-content: space-between;
+            }
+
+            .title-list {
+                border-right: 1px solid #dddddd;
+                min-height: 500px;
+            }
+
+            .content {
+                border-left: 1px solid #dddddd;
+                min-height: 600px;
+                margin-left: -1px;
+            }
+        </style>
+    {% endblock %}
+
+    {% block content %}
+        <div class="container">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <div><i class="fa fa-book" aria-hidden="true"></i>Wiki Document</div>
+                    <div class="function">
+                        <a type="button" class="btn btn-success btn-xs"
+                           href="{% url 'wiki_add' request.tracer.project.id %}">
+                            <i class="fa fa-plus-circle" aria-hidden="true"></i> Create Document
+                        </a>
+                    </div>
+                </div>
+                <div class="panel-body">
+                    <div class="col-sm-3 title-list">
+                        <ul id="catalog"></ul>
+                    </div>
+                    <div class="col-sm-9 content">
+                        <form method="post">
+                            {% csrf_token %}
+                            {% for item in form %}
+                            <div class="form-group">
+                                <label for="{{item.id_for_label }}">{{ item.label }}</label>
+                                {{ item }}
+                            <span class="error-msg">{{ item.errors.0 }}</span>
+                            </div>
+                                {% endfor %}
+                        <input type="submit"class="btn btn-primary" value="Create">
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    {% endblock %}
+
+{% block js %}
+    <script type="text/javascript">
+    $(function(){
+        initCatalog();
+    })
+    function initCatalog(){
+        $.ajax({
+            url:"{% url 'wiki_catalog' project_id=request.tracer.project.id%}",
+            type:"GET",
+            dataType:"JSON",
+            success: function (res){
+                if(res.status){
+                    $.each(res.data,function(index,item){
+                        if(!item.parent_id){
+                            //<li><a>目录2</a></li>
+                            //在<ul id="catalog"></ul>里
+                            var li = $("<li>").attr('id',"id_"+item.id).append($('<a>').text(item.title));
+                            $('#catalllog')
+                        }
+                    })
+                }else{
+                    alert("Initialization fails")
+                }
+            }
+        })
+    }
+    </script>
+{% endblock %}
+
