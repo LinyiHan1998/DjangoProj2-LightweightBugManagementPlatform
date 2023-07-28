@@ -8,6 +8,7 @@ __pycache__/
 
 #Django
 local_settings.py
+*/plugin/
 *.sqlite3
 media/
 
