@@ -19,7 +19,6 @@
             border-right: 1px solid #dddddd;
             min-height: 500px;
         }
-
         .title-list ul {
             padding-left: 15px;
         }
@@ -43,21 +42,10 @@
             <div class="panel-heading">
                 <div><i class="fa fa-book" aria-hidden="true"></i>Wiki Document</div>
                 <div class="function">
-
                     <a type="button" class="btn btn-success btn-xs"
                        href="{% url 'wiki_add' request.tracer.project.id %}">
                         <i class="fa fa-plus-circle" aria-hidden="true"></i> Create Document
                     </a>
-                    {% if wiki_obj %}
-                        <a type="button" class="btn btn-primary btn-xs"
-                       href="{% url 'wiki_edit' request.tracer.project.id wiki_obj.id%}">
-                        <i class="fa fa-edit" aria-hidden="true"></i> Edit Document
-                    </a>
-                        <a type="button" class="btn btn-danger btn-xs"
-                       href="{% url 'wiki_delete' request.tracer.project.id wiki_obj.id %}">
-                        <i class="fa fa-trash" aria-hidden="true"></i> Delete Document
-                    </a>
-                    {% endif %}
                 </div>
             </div>
             <div class="panel-body">
@@ -65,25 +53,24 @@
                     <ul id="catalog"></ul>
                 </div>
                 <div class="col-sm-9 content">
-                    {% if wiki_obj %}
-                        {{ wiki_obj.content }}
-                    {% else %}
-                        <div style="text-align: center;margin-top: 50px">
-                            <h4><span
-                                    style="font-weight: bold;font-style: italic">{{ request.tracer.project.name }}</span>
-                                Wiki Document</h4>
-                            <a href="{% url 'wiki_add' request.tracer.project.id %}">
-                                <i class="fa fa-plus-circle" aria-hidden="true"></i> Create Document
-                            </a>
-                        </div>
-                    {% endif %}
-
+                    <form method="post">
+                        {% csrf_token %}
+                        {% for item in form %}
+                            <div class="form-group">
+                                <label for="{{ item.id_for_label }}">{{ item.label }}</label>
+                                {{ item }}
+                                <span class="error-msg">{{ item.errors.0 }}</span>
+                            </div>
+                        {% endfor %}
+                        <input type="submit" class="btn btn-primary" value="Submit">
+                    </form>
                 </div>
             </div>
         </div>
 
     </div>
 {% endblock %}
+
 {% block js %}
     <script type="text/javascript">
         var WIKI_DETAIL_URL = "{% url 'wiki' project_id=request.tracer.project.id %}";
@@ -117,5 +104,4 @@
         }
     </script>
 {% endblock %}
-
 

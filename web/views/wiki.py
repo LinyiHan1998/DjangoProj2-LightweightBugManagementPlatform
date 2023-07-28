@@ -14,7 +14,7 @@ def wiki(request,project_id):
 def wiki_add(request,project_id):
     if request.method =='GET':
         form = WikiModelForm(request)
-        return render(request,'web/wiki_add.html',{'form':form})
+        return render(request,'web/wiki_form.html',{'form':form})
     form = WikiModelForm(request, data=request.POST)
     if form.is_valid():
         #判断用户是否选择了父文章
@@ -35,4 +35,23 @@ def wiki_catalog(request,project_id):
 
 def wiki_delete(request,project_id,wiki_id):
     models.Wiki.objects.filter(id=wiki_id,project_id=project_id).first().delete()
-    return render(request,'web/wiki.html')
+
+    url = reverse('wiki',kwargs={'project_id':project_id})
+    return redirect(url)
+
+def wiki_edit(request,project_id,wiki_id):
+
+    wiki_obj = models.Wiki.objects.filter(project_id=project_id,id=wiki_id).first()
+
+    if not wiki_obj:
+        url = reverse('wiki',kwargs={'project_id':project_id})
+        return redirect(url)
+    if request.method == 'GET':
+        form = WikiModelForm(request,instance=wiki_obj)
+        return render(request,'web/wiki_form.html',{'form':form})
+    form = WikiModelForm(request,instance=wiki_obj,data=request.POST)
+    if form.is_valid():
+        form.save()
+        url = reverse('wiki', kwargs={'project_id': project_id})
+        preview_url = "{0}?wiki_id={1}".format(url,wiki_id)
+        return redirect(preview_url)
