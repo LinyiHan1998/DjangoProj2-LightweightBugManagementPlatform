@@ -6,7 +6,7 @@ from web import models
 class FolderModelForm(BootstrapModelForm,forms.ModelForm):
     class Meta:
         model = models.Files
-        fields = ['FileName']
+        fields = ['FileName',]
 
     def __init__(self,request,parent_obj,*args,**kwargs):
         super().__init__(*args, **kwargs)
@@ -14,16 +14,20 @@ class FolderModelForm(BootstrapModelForm,forms.ModelForm):
         self.parent_obj = parent_obj
 
     def clean_FileName(self):
+        print('clean_filename')
         FileName = self.cleaned_data.get('FileName')
 
         queryset = models.Files.objects.filter(FileName=FileName,type=1,project_id=self.request.tracer.project)
-
+        print(queryset)
         if self.parent_obj:
+            print(1)
             exists = queryset.filter(parent= self.parent_obj).exists()
         else:
+            print(2)
             exists = queryset.filter(parent__isnull=True).exists()
 
         if exists:
+            print(3)
             raise ValidationError('File already exists')
         return FileName
 

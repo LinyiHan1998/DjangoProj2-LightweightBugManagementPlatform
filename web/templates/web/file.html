@@ -2,6 +2,9 @@
 {% load static %}
 {% block css %}
     <style>
+    .error-msg{
+        color: red;
+    }
         .panel-default .panel-heading {
             display: flex;
             flex-direction: row;
@@ -55,9 +58,9 @@
                         <span>Files</span>
                     </a>
                     {% for record in breadcrumb_list %}
-                        <a href="{% url 'file' project_id=request.tracer.project.id %}?folder={{ record.id }}">
+                        <a href="{% url 'file' project_id=request.tracer.project.id%}?folder={{record.id}}">
                             <i class="fa fa-caret-right" aria-hidden="true"></i>
-                            <span>{{ record.name }}</span>
+                            <span>{{ record.FileName }}</span>
                         </a>
                     {% endfor %}
                 </div>
@@ -86,19 +89,19 @@
                 {% for item in file_object_list %}
                     <tr>
                         <td>
-                            {% if item.file_type == 1 %}
+                            {% if item.type == 2 %}
                                 <i class="fa fa-file" aria-hidden="true"></i>
                                 {{ item.name }}
                             {% else %}
                                 <a href="{% url 'file' project_id=request.tracer.project.id %}?folder={{ item.id }}">
                                     <i class="fa fa-folder" aria-hidden="true"></i>
-                                    {{ item.name }}
+                                    {{ item.FileName }}
                                 </a>
                             {% endif %}
                         </td>
                         <td>
-                            {% if item.file_type == 2 %}
-                                {{ item.file_size }}
+                            {% if item.type == 1 %}
+                                {{ item.size }}
                             {% else %}
                                 -
                             {% endif %}
@@ -106,11 +109,11 @@
                         <td>{{ item.update_user.username }}</td>
                         <td>{{ item.update_datetime }}</td>
                         <td>
-                            {% if item.file_type == 1 %}
+                            {% if item.type == 1 %}
                                 <a class="btn btn-default btn-xs"
                                    data-toggle="modal"
                                    data-target="#addModal"
-                                   data-name="{{ item.name }}"
+                                   data-name="{{ item.FileName }}"
                                    data-fid="{{ item.id }}"
                                    data-whatever="Manage Folder">
                                     <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
@@ -176,8 +179,8 @@
                     All files in folder will be deleted
                 </p>
                 <p style="text-align: right;">
-                    <a class="btn btn-default btn-sm" data-dismiss="modal" aria-label="Close">取 消</a>
-                    <button id="btnDelete" type="button" class="btn btn-danger btn-sm">确 定</button>
+                    <a class="btn btn-default btn-sm" data-dismiss="modal" aria-label="Close">Cancel</a>
+                    <button id="btnDelete" type="button" class="btn btn-danger btn-sm">Confirm</button>
                 </p>
             </div>
         </div>
@@ -269,7 +272,7 @@
                     checkFileList.push({'name': fileObject.name, 'size': fileObject.size})
                 });
 
-                // 把这些数据发送到django后台：Django后台进行容量的校验，如果么有问题则返回临时凭证；否则返回错误信息；
+                // 把这些数据发送到django后台：Django后台进行容量的校验，如果没有问题则返回临时凭证；否则返回错误信息；
                 var cos_credential = new COS({
                     getAuthorization: function (options, callback) {
                         $.post(COS_CREDENTIAL, JSON.stringify(checkFileList), function (res) {
@@ -395,7 +398,7 @@
         function bindModelSubmit() {
             $('#btnFormSubmit').click(function () {
                 $.ajax({
-                    url: location.href,
+                    url: FOLDER_URL,
                     type: "POST",
                     data: $("#form").serialize(),
                     dataType: "JSON",
@@ -409,6 +412,7 @@
                         }
                     }
                 })
+                console.log('btnFormSubmit clicked')
             })
         }
     </script>
