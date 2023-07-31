@@ -1,7 +1,10 @@
+import time
 from django.shortcuts import render,HttpResponse,redirect
+from django.conf import settings
 from django.http import JsonResponse
 from web.forms.project import ProjectModelForm
 from web import models
+from utils.aws.awsS3 import AwsS3
 
 def project_list(request):
     if request.method =='GET':
@@ -34,6 +37,15 @@ def project_list(request):
     if form.is_valid():
         #验证通过
         form.instance.creator = request.tracer.user
+        project_name = form.instance.name.lower()
+        #为项目创建一个桶
+        bucket = "zxcvfdgvc"
+        #s3 = AwsS3()
+        #s3.my_create_bucket(bucket)
+
+        #把桶和区域写入数据库
+        form.instance.bucket = bucket
+        form.instance.region = settings.REGION_NAME
         #创建项目
         form.save()
         return JsonResponse({'status': True})

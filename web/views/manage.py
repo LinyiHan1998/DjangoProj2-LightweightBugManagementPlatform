@@ -8,8 +8,6 @@ def issue(request,project_id):
 def statistics(request,project_id):
     return render(request,'web/statistics.html')
 
-def file(request,project_id):
-    return render(request,'web/file.html')
 
 def setting(request,project_id):
     return render(request,'web/setting.html')

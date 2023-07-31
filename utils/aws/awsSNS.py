@@ -258,9 +258,7 @@ class SnsWrapper:
 
 def usage_demo():
      session = boto3.Session(
-         aws_access_key_id="AKIAWPX26A2EXIBI5QHU",
-         aws_secret_access_key="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",
-         region_name="us-west-1"
+
      )
      sns_wrapper = SnsWrapper(session.resource("sns"))
      topic = sns_wrapper.sns_resource.create_topic(Name="RequirementTacer")

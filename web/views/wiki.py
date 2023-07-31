@@ -1,8 +1,12 @@
+import uuid
 from django.shortcuts import render,redirect,HttpResponse
 from django.urls import reverse
 from django.http import JsonResponse
+from django.views.decorators.csrf import csrf_exempt
+from utils.aws.awsS3 import AwsS3
 from web.forms.wiki import WikiModelForm
 from web import models
+
 
 def wiki(request,project_id):
     wiki_id = request.GET.get('wiki_id')
@@ -55,3 +59,30 @@ def wiki_edit(request,project_id,wiki_id):
         url = reverse('wiki', kwargs={'project_id': project_id})
         preview_url = "{0}?wiki_id={1}".format(url,wiki_id)
         return redirect(preview_url)
+
+
+@csrf_exempt
+def wiki_upload(request,project_id):
+    res_list = {
+        'success': None,
+        'message': None,
+        'url': None
+    }
+    print(1)
+    upload_data = request.FILES.get('editormd-image-file')
+    if not upload_data:
+        res_list['message'] = 'Image does not exist'
+        return JsonResponse(res_list)
+    ext = upload_data.name.rsplit('.')[-1]
+    key = "{}.{}".format(uuid.uuid4(),ext)
+
+    print(upload_data)
+    print(key)
+
+    s3_imageUpload = AwsS3()
+    image_url = 'https://zxcvfdgvc.s3.us-west-1.amazonaws.com/'+key
+    s3_imageUpload.upload_single_photo(upload_data, key, request.tracer.project.bucket)
+
+    res_list['success'] = 1
+    res_list['url'] = image_url
+    return JsonResponse(res_list)

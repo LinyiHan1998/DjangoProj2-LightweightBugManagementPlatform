@@ -65,6 +65,8 @@ class Project(models.Model):
     creator = models.ForeignKey(verbose_name='Creator',to='UserInfo')
     create_datetime = models.DateTimeField(verbose_name='Create Time', auto_now_add=True)
 
+
+
     #定义多对多关系，可以方便联表查询。如果没有through会自动建新表。through表示把新表内容放在through关联的表里。好处是关联的表可以定义原本表没有的字段
     #project_user = models.ManyToManyField(to='UserInfo',through='ProjectUser',through_fields=('project','user'))
 
@@ -75,8 +77,6 @@ class ProjectUser(models.Model):
 
     star = models.BooleanField(verbose_name='Star',default=False)
     create_datetime = models.DateTimeField(verbose_name='Create Time', auto_now_add=True)
-
-
 
 
 #wiki
@@ -91,3 +91,21 @@ class Wiki(models.Model):
     parent = models.ForeignKey(verbose_name='Parent File',to='Wiki',null=True,blank=True,related_name='children')
     def __str__(self):
         return self.title
+
+#Files
+class Files(models.Model):
+    project_id = models.ForeignKey(verbose_name='Project',to='Project')
+    FileName = models.CharField(verbose_name='File Name',max_length=32,help_text="Directory/FileName")
+    type_choices = (
+        (1,'Dir'),
+        (2,'Doc')
+    )
+    type = models.SmallIntegerField(verbose_name='type',choices=type_choices)
+    size = models.IntegerField(verbose_name='File Size',null=True,blank=True)
+
+    path = models.CharField(verbose_name='Path',max_length=255,null=True,blank=True)
+
+    parent = models.ForeignKey(verbose_name='Parent File',to='Files',null=True,blank=True,related_name='children')
+    key=models.CharField(verbose_name='Key',max_length=128,null=True,blank=True)
+    update_user = models.ForeignKey(verbose_name='Update by',to='UserInfo')
+    update_datetime = models.DateTimeField(verbose_name='Update At', auto_now=True)

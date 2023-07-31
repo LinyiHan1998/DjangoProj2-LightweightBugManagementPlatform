@@ -36,6 +36,9 @@
             min-height: 600px;
             margin-left: -1px;
         }
+        .editormd-fullscreen{
+            z-index:1001
+        }
     </style>
 {% endblock %}
 
@@ -87,6 +90,7 @@
     <script src="{% static 'web/plugin/editor-md/editormd.min.js' %}"></script>
     <script type="text/javascript">
         var WIKI_DETAIL_URL = "{% url 'wiki' project_id=request.tracer.project.id %}";
+        var WIKI_UPLOAD_URL = "{% url 'wiki_upload'  project_id=request.tracer.project.id%}"
         $(function () {
             initCatalog();
             initEditorMd();
@@ -121,7 +125,10 @@
             editormd('Editor',{
                 placeholder: "Please type in content",
                 height:500,
-                path:"{% static 'web/plugin/editor-md/lib/' %}"
+                path:"{% static 'web/plugin/editor-md/lib/' %}",
+                imageUpload:true,
+                imageFormat:["jpg","jpeg","png","gif"],
+                imageUploadURL : WIKI_UPLOAD_URL
             })
         }
     </script>

@@ -1,5 +1,5 @@
 from django.conf.urls import url,include
-from web.views import account, home, project, manage, wiki
+from web.views import account, home, project, manage, wiki, file
 
 urlpatterns = [
     url(r'^register/', account.register, name='register'),
@@ -22,7 +22,13 @@ urlpatterns = [
         url(r'^dashboard/$', manage.dashboard, name='dashboard'),
         url(r'^issue/$', manage.issue, name='issue'),
         url(r'^statistics/$', manage.statistics, name='statistics'),
-        url(r'^file/$', manage.file, name='file'),
+
+        #files
+        url(r'^file/$', file.file, name='file'),
+        url(r'^file/delete/$', file.file_delete, name='file_delete'),
+        url(r'^cos/credential/$', file.cos_credential, name='cos_credential'),
+        url(r'^file/post/$', file.file_post, name='file_post'),
+        url(r'^file/download/(?P<file_id>\d+)/$', file.file_download, name='file_download'),
 
 
         #wiki
@@ -31,6 +37,10 @@ urlpatterns = [
         url(r'^wiki/catalog$', wiki.wiki_catalog, name='wiki_catalog'),
         url(r'^wiki/delete/(?P<wiki_id>\d+)/$', wiki.wiki_delete, name='wiki_delete'),
         url(r'^wiki/edit/(?P<wiki_id>\d+)/$', wiki.wiki_edit, name='wiki_edit'),
+        url(r'^wiki/upload/$', wiki.wiki_upload, name='wiki_upload'),
+
+
+
         url(r'^setting/$', manage.setting, name='setting'),
     ], None, None)),
 
