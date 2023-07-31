@@ -47,5 +47,6 @@ def cos_credential(request,project_id):
 def file_post(request,project_id):
     pass
 
+
 def file_download(request,project_id,file_id):
     pass
