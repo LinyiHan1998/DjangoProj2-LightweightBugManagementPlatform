@@ -44,7 +44,6 @@ def file(request,project_id):
         return render(request,'web/file.html',context)
     print('POST request')
     fid = request.POST.get('fid','')
-    print(fid)
     edit_obj = None
     if fid.isdecimal():
         edit_obj = models.Files.objects.filter(id=int(fid),type=1,project_id=request.tracer.project).first()
@@ -68,16 +67,42 @@ def file(request,project_id):
     return JsonResponse({'status':False,'error':form.errors})
 
 def file_delete(request,project_id):
-    pass
+    fid = request.GET.get('fid', '')
+    delete_obj = models.Files.objects.filter(id=fid,project_id=request.tracer.project).first()
+    if delete_obj.type == 2:
+        #delete files in database, cos, release used space
+        total_size = 0
+        folder_list = [delete_obj,]
+        key_list = []
+        for folder in folder_list:
+            child_list = models.Files.objects.filter(project_id=request.tracer.project,parent=folder).order_by('type')
+            for child in child_list:
+                if child.type == 1:
+                    folder.append(child)
+                else:
+                    #file
+                    total_size += child.file_size
+                    ket_list.append(child.key)
+                    #delete in cos
+                    #todo
+        request.tracer.project.use_space -= delete_obj.size
+        request.tracer.project.save()
+    else:
+        pass
+    delete_obj.delete()
+    return JsonResponse({'status':True})
 
 
 def cos_credential(request,project_id):
-    logging.info('Entering cos_credentisl')
     client = boto3.client('sts')
     response = client.get_session_token(DurationSeconds=3600)
     logging.info('Credentials {}'.format(response['Credentials']))
-
     logging.info('Leaving cos_credentisl')
+    data={
+        'startTime':0,
+        'expiredTime':0,
+        'credentials':response['Credentials']
+    }
     return JsonResponse({'credentials':response['Credentials']})
 
 def file_post(request,project_id):

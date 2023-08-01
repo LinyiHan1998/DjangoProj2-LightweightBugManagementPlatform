@@ -246,6 +246,7 @@
 {% endblock %}
 
 {% block js %}
+    <script src="https://sdk.amazonaws.com/js/aws-sdk-2.1111.0.min.js"></script>
 
     <script>
         var FOLDER_URL = "{% url 'file' project_id=request.tracer.project.id %}";
@@ -279,9 +280,9 @@
                             if (res.status) {
                                 var credentials = res.data && res.data.credentials;
                                 callback({
-                                    TmpSecretId: credentials.tmpSecretId,
-                                    TmpSecretKey: credentials.tmpSecretKey,
-                                    XCosSecurityToken: credentials.sessionToken,
+                                    TmpSecretId: credentials.AccessKeyId,
+                                    TmpSecretKey: credentials.SecretAccessKey,
+                                    XCosSecurityToken: credentials.SessionToken,
                                     StartTime: res.data.startTime,
                                     ExpiredTime: res.data.expiredTime
                                 });
