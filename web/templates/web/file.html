@@ -69,7 +69,7 @@
                         <div><i class="fa fa-upload" aria-hidden="true"></i> Upload File</div>
                         <input type="file" multiple name="uploadFile" id="uploadFile">
                     </div>
-                    <a class="btn btn-success btn-xs" data-toggle="modal" data-target="#addModal" data-whatever="Create Folder" id="getModalInfo">
+                    <a class="btn btn-success btn-xs" data-toggle="modal" data-target="#addModal" data-whatever="Create Folder" >
                         <i class="fa fa-plus-circle" aria-hidden="true"></i> Create Folder
                     </a>
                 </div>
@@ -246,8 +246,7 @@
 {% endblock %}
 
 {% block js %}
-    <script src="https://sdk.amazonaws.com/js/aws-sdk-2.224.1.js"></script>
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+
     <script>
         var FOLDER_URL = "{% url 'file' project_id=request.tracer.project.id %}";
         var FILE_DELETE_URL = "{% url 'file_delete' project_id=request.tracer.project.id %}";
@@ -370,18 +369,12 @@
 
         function initAddModal() {
             $('#addModal').on('show.bs.modal', function (event) {
-                const getModalInfo = document.getElementById('getModalInfo')
                 var button = $(event.relatedTarget); // Button that triggered the modal
                 var recipient = button.data('whatever'); // Extract info from data-* attributes
                 var name = button.data('name'); // Extract info from data-* attributes
                 var fid = button.data('fid'); // Extract info from data-* attributes
                 var modal = $(this);
                 modal.find('.modal-title').text(recipient);
-                {#var recipient = getModalInfo.getAttribute("data-whatever");#}
-                {#var name = getModalInfo.getAttribute("data-name");#}
-                {#var fid = getModalInfo.getAttribute("data-fid");#}
-                {#var modal = $(this);#}
-                {#modal.find('.modal-title').text(recipient);#}
 
                 if (fid) {
                     // 编辑
