@@ -8,7 +8,6 @@ from web import models
 from web.forms.file import FolderModelForm,FileModelForm
 
 def file(request,project_id):
-
     print('Entering file')
     parent_obj = None
     folder_id=request.GET.get('folder',"")
@@ -45,21 +44,24 @@ def file(request,project_id):
         return render(request,'web/file.html',context)
     print('POST request')
     fid = request.POST.get('fid','')
+    print(fid)
     edit_obj = None
     if fid.isdecimal():
         edit_obj = models.Files.objects.filter(id=int(fid),type=1,project_id=request.tracer.project).first()
+        print('Edit-obj')
+        print(edit_obj)
     if edit_obj:
         form = FolderModelForm(request, parent_obj, data=request.POST,instance=edit_obj)
     else:
         form = FolderModelForm(request, parent_obj, data=request.POST)
     if form.is_valid():
-        logging.info('Form is valid')
+        print('Form is valid')
         form.instance.project_id = request.tracer.project
         form.instance.type = 1
         form.instance.update_user = request.tracer.user
         form.instance.parent = parent_obj
         form.save()
-        logging.info('Leaving file')
+        print('Leaving file')
         return JsonResponse({'status':True})
     print(form.errors)
     print('Leaving file')
