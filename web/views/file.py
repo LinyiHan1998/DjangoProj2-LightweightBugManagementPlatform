@@ -2,10 +2,12 @@ import boto3
 import logging
 from django.shortcuts import render
 from django.forms import model_to_dict
+from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 
 from web import models
 from web.forms.file import FolderModelForm,FileModelForm
+from utils.aws.awsS3 import AwsS3
 
 def file(request,project_id):
     print('Entering file')
@@ -67,43 +69,51 @@ def file(request,project_id):
     return JsonResponse({'status':False,'error':form.errors})
 
 def file_delete(request,project_id):
+    aws = AwsS3()
     fid = request.GET.get('fid', '')
     delete_obj = models.Files.objects.filter(id=fid,project_id=request.tracer.project).first()
     if delete_obj.type == 2:
-        #delete files in database, cos, release used space
-        total_size = 0
-        folder_list = [delete_obj,]
-        key_list = []
-        for folder in folder_list:
-            child_list = models.Files.objects.filter(project_id=request.tracer.project,parent=folder).order_by('type')
-            for child in child_list:
-                if child.type == 1:
-                    folder.append(child)
-                else:
-                    #file
-                    total_size += child.file_size
-                    ket_list.append(child.key)
-                    #delete in cos
-                    #todo
+        # delete file in database, S3, release used space
         request.tracer.project.use_space -= delete_obj.size
         request.tracer.project.save()
-    else:
-        pass
+
+        #delete file in S3
+        aws.delete_file('zxcvfdgvc',request.tracer.project.key)
+
+        #delete file in DB
+        delete_obj.delete()
+        return JsonResponse({'status': True})
+
+    total_size = 0
+    folder_list = [delete_obj,]
+    key_list = []
+    for folder in folder_list:
+        child_list = models.Files.objects.filter(project_id=request.tracer.project,parent=folder).order_by('type')
+        for child in child_list:
+            if child.type == 1:
+                folder_list.append(child)
+            else:
+                #file
+                total_size += child.file_size
+
+                #delete in cos
+                key_list.append(child.key)
+    if key_list:
+        aws.delete_files('zxcvfdgvc',key_list)
+
+    if total_size:
+        request.tracer.project.use_space -= total_size
+        request.tracer.project.save()
+
     delete_obj.delete()
     return JsonResponse({'status':True})
 
-
+@csrf_exempt
 def cos_credential(request,project_id):
-    client = boto3.client('sts')
-    response = client.get_session_token(DurationSeconds=3600)
-    logging.info('Credentials {}'.format(response['Credentials']))
-    logging.info('Leaving cos_credentisl')
-    data={
-        'startTime':0,
-        'expiredTime':0,
-        'credentials':response['Credentials']
-    }
-    return JsonResponse({'credentials':response['Credentials']})
+    aws = AwsS3()
+    data=aws.cos_credential()
+    print(data)
+    return JsonResponse({'data':data})
 
 def file_post(request,project_id):
     pass

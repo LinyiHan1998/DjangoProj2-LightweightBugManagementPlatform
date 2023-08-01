@@ -274,7 +274,7 @@
                 });
 
                 // 把这些数据发送到django后台：Django后台进行容量的校验，如果没有问题则返回临时凭证；否则返回错误信息；
-                var cos_credential = new COS({
+                var cos_credential = new AWS.S3({
                     getAuthorization: function (options, callback) {
                         $.post(COS_CREDENTIAL, JSON.stringify(checkFileList), function (res) {
                             if (res.status) {
@@ -284,7 +284,7 @@
                                     TmpSecretKey: credentials.SecretAccessKey,
                                     XCosSecurityToken: credentials.SessionToken,
                                     StartTime: res.data.startTime,
-                                    ExpiredTime: res.data.expiredTime
+                                    ExpiredTime: res.data.credentials.Expiration
                                 });
 
                                 $('#uploadProgress').removeClass('hide');

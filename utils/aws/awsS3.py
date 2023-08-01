@@ -1,6 +1,8 @@
 import uuid
 import os
+import boto3
 import base64
+import logging
 from io import BytesIO
 from boto3.session import Session
 from django.conf import settings
@@ -42,9 +44,48 @@ class AwsS3():
         except Exception as e:
             print("Create Bucket {} error:{}".format(bucket_name,e))
 
+    def delete_files(self, bucket_name, file_keys):
+        try:
+            response = self.client.delete_objects(
+                Bucket=bucket_name,
+                Delete={
+                    'Objects': [{'Key': key} for key in file_keys],
+                    'Quiet': False
+                }
+            )
+            deleted_objects = response.get('Deleted', [])
+            print("Deleted objects:")
+            for obj in deleted_objects:
+                print(f"  - {obj['Key']}")
+        except Exception as e:
+            print("Error deleting objects:", e)
 
-# if __name__ == '__main__':
-#     create_bucket("/Users/linyi/Desktop/1211687485001_.pic.jpg","test.jpg")
+    def delete_file(self,bucket_name, file_key):
+        try:
+            self.client.delete_object(Bucket=bucket_name, Key=file_key)
+            print(f"File '{file_key}' deleted successfully.")
+        except Exception as e:
+            print("Error deleting the file:", e)
+
+    def cos_credential(self):
+        client = boto3.client('sts')
+        response = client.get_session_token(DurationSeconds=3600)
+        logging.info('Credentials {}'.format(response['Credentials']))
+        logging.info('Leaving cos_credentisl')
+        print(response['Credentials'])
+        #{
+        # 'AccessKeyId': 'xx',
+        # 'SecretAccessKey': 'xx',
+        # 'SessionToken': 'xx',
+        # 'Expiration': datetime.datetime(2023, 8, 1, 10, 22, 31, tzinfo=tzutc())}
+        return response['Credentials']
+
+
+if __name__ == '__main__':
+    aws = AwsS3()
+    aws.cos_credential()
+#     file_keys = [{'Key':'0810ab40-fddb-48de-a438-17e1bbb7a80f.jpg'}]
+#     aws.delete_file("zxcvfdgvc",file_keys)
 # def usage_demo():
 #     print('-'*88)
 #     print("Welcome to the Amazon S3 bucket demo!")
