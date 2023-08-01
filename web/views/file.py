@@ -113,9 +113,12 @@ def cos_credential(request,project_id):
     aws = AwsS3()
     data=aws.cos_credential()
     print(data)
-    return JsonResponse({'data':data})
+    return JsonResponse({'status':True,'data':data})
 
+@csrf_exempt
 def file_post(request,project_id):
+    print('entering file post')
+    print(request.POST)
     pass
 
 

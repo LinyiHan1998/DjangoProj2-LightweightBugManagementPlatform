@@ -2,9 +2,10 @@
 {% load static %}
 {% block css %}
     <style>
-    .error-msg{
-        color: red;
-    }
+        .error-msg {
+            color: red;
+        }
+
         .panel-default .panel-heading {
             display: flex;
             flex-direction: row;
@@ -58,7 +59,7 @@
                         <span>Files</span>
                     </a>
                     {% for record in breadcrumb_list %}
-                        <a href="{% url 'file' project_id=request.tracer.project.id%}?folder={{record.id}}">
+                        <a href="{% url 'file' project_id=request.tracer.project.id %}?folder={{ record.id }}">
                             <i class="fa fa-caret-right" aria-hidden="true"></i>
                             <span>{{ record.FileName }}</span>
                         </a>
@@ -69,7 +70,8 @@
                         <div><i class="fa fa-upload" aria-hidden="true"></i> Upload File</div>
                         <input type="file" multiple name="uploadFile" id="uploadFile">
                     </div>
-                    <a class="btn btn-success btn-xs" data-toggle="modal" data-target="#addModal" data-whatever="Create Folder" >
+                    <a class="btn btn-success btn-xs" data-toggle="modal" data-target="#addModal"
+                       data-whatever="Create Folder">
                         <i class="fa fa-plus-circle" aria-hidden="true"></i> Create Folder
                     </a>
                 </div>
@@ -116,7 +118,7 @@
                                    data-name="{{ item.FileName }}"
                                    data-fid="{{ item.id }}"
                                    data-whatever="Manage Folder"
-                                    id="getModalInfo">
+                                   id="getModalInfo">
                                     <i class="fa fa-pencil-square-o" aria-hidden="true"></i>
                                 </a>
                             {% else %}
@@ -246,7 +248,7 @@
 {% endblock %}
 
 {% block js %}
-    <script src="https://sdk.amazonaws.com/js/aws-sdk-2.1111.0.min.js"></script>
+    <script src="https://sdk.amazonaws.com/js/aws-sdk-2.1426.0.min.js"></script>
 
     <script>
         var FOLDER_URL = "{% url 'file' project_id=request.tracer.project.id %}";
@@ -272,83 +274,83 @@
                 $.each(fileList, function (index, fileObject) {
                     checkFileList.push({'name': fileObject.name, 'size': fileObject.size})
                 });
+                console.log(fileList, checkFileList)
 
+                var credential = 0
                 // 把这些数据发送到django后台：Django后台进行容量的校验，如果没有问题则返回临时凭证；否则返回错误信息；
-                var cos_credential = new AWS.S3({
-                    getAuthorization: function (options, callback) {
-                        $.post(COS_CREDENTIAL, JSON.stringify(checkFileList), function (res) {
-                            if (res.status) {
-                                var credentials = res.data && res.data.credentials;
-                                callback({
-                                    TmpSecretId: credentials.AccessKeyId,
-                                    TmpSecretKey: credentials.SecretAccessKey,
-                                    XCosSecurityToken: credentials.SessionToken,
-                                    StartTime: res.data.startTime,
-                                    ExpiredTime: res.data.credentials.Expiration
+                $.ajax({
+                    url: COS_CREDENTIAL,
+                    type: "POST",
+                    data: {fid: $(this).attr('fid')},
+                    data_type: 'Json',
+                    success: function (res) {
+                        if (res.status) {
+                            credential = res.data;
+                            AWS.config.update({
+                                accessKeyId: credential.AccessKeyId,
+                                secretAccessKey: credential.SecretAccessKey,
+                                sessionToken: credential.SessionToken,
+                                region: 'us-west-1'
+                            })
+                            console.log(1)
+                            const s3 = new AWS.S3()
+                            $.each(fileList, function (index, fileObject) {
+                                var fileName = fileObject.name;
+                                var fileSize = fileObject.size;
+                                var key = (new Date()).getTime() + "_" + fileName;
+
+                                var tr = $('#progressTemplate').find('tr').clone();
+                                tr.find('.name').text(fileName);
+                                $('#progressList').append(tr);
+
+                                // 上传文件（异步）
+                                const params = {
+                                    Bucket: 'zxcvfdgvc',
+                                    Key: key,
+                                    Body: fileObject,
+                                    ACL: 'public-read'
+                                };
+
+                                s3.putObject(params, function (err, data) {
+                                    if (err) {
+                                        console.log('AWS S3 Upload Failed');
+                                        tr.find('.progress-error').text('上传失败');
+                                    } else {
+                                        console.log('AWS S3 Upload success')
+                                        // 上传成功，将本次上传的文件提交到后台并写入数据
+                                        // 当前文件上传成功
+                                        $.post(FILE_POST, {
+                                            name: fileName,
+                                            key: key,
+                                            file_size: fileSize,
+                                            parent: CURRENT_FOLDER_ID,
+                                            etag: data.ETag,
+                                            file_path: data.Location
+                                        }, function (res) {
+                                            // 在数据库中写入成功，将已添加的数据在页面上动态展示。
+                                            var newTr = $('#rowTpl').find('tr').clone();
+                                            newTr.find('.name').text(res.data.name);
+                                            newTr.find('.file_size').text(res.data.file_size);
+                                            newTr.find('.username').text(res.data.username);
+                                            newTr.find('.datetime').text(res.data.datetime);
+                                            newTr.find('.delete').attr('data-fid', res.data.id);
+                                            newTr.find('.download').attr('href', res.data.download_url);
+                                            $('#rowList').append(newTr);
+
+                                            // 自己的进度删除
+                                            tr.remove();
+                                        })
+
+                                    }
                                 });
 
-                                $('#uploadProgress').removeClass('hide');
-                            } else {
-                                alert(res.error);
-                            }
-                        });
-                    }
-                });
-
-                // 上传文件（上传之前先获取临时凭证
-                $.each(fileList, function (index, fileObject) {
-                    var fileName = fileObject.name;
-                    var fileSize = fileObject.size;
-                    var key = (new Date()).getTime() + "_" + fileName;
-
-                    var tr = $('#progressTemplate').find('tr').clone();
-                    tr.find('.name').text(fileName);
-                    $('#progressList').append(tr);
-
-                    // 上传文件（异步）
-                    cos_credential.putObject({
-                        Bucket: '{{ request.tracer.project.bucket }}', /* 必须 */
-                        Region: '{{ request.tracer.project.region }}', /* 存储桶所在地域，必须字段 */
-                        Key: key, /* 必须 */
-                        Body: fileObject, // 上传文件对象
-                        onProgress: function (progressData) {
-                            var percent = progressData.percent * 100 + '%';
-                            tr.find('.progress-bar').text(percent);
-                            tr.find('.progress-bar').css('width', percent);
-                        }
-                    }, function (err, data) {
-                        if (data && data.statusCode === 200) {
-                            // 上传成功，将本次上传的文件提交到后台并写入数据
-                            // 当前文件上传成功
-                            $.post(FILE_POST, {
-                                name: fileName,
-                                key: key,
-                                file_size: fileSize,
-                                parent: CURRENT_FOLDER_ID,
-                                etag: data.ETag,
-                                file_path: data.Location
-                            }, function (res) {
-                                // 在数据库中写入成功，将已添加的数据在页面上动态展示。
-                                var newTr = $('#rowTpl').find('tr').clone();
-                                newTr.find('.name').text(res.data.name);
-                                newTr.find('.file_size').text(res.data.file_size);
-                                newTr.find('.username').text(res.data.username);
-                                newTr.find('.datetime').text(res.data.datetime);
-                                newTr.find('.delete').attr('data-fid', res.data.id);
-                                newTr.find('.download').attr('href', res.data.download_url);
-                                $('#rowList').append(newTr);
-
-                                // 自己的进度删除
-                                tr.remove();
                             })
-
-                        } else {
-                            tr.find('.progress-error').text('上传失败');
+                            {#location.href = location.href;#}
                         }
-                    });
-
-
+                    }
                 })
+
+
             });
         }
 

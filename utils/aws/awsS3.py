@@ -72,7 +72,6 @@ class AwsS3():
         response = client.get_session_token(DurationSeconds=3600)
         logging.info('Credentials {}'.format(response['Credentials']))
         logging.info('Leaving cos_credentisl')
-        print(response['Credentials'])
         #{
         # 'AccessKeyId': 'xx',
         # 'SecretAccessKey': 'xx',
