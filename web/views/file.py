@@ -1,8 +1,9 @@
 import json
 import boto3
 import logging
+import requests
 
-from django.shortcuts import render
+from django.shortcuts import render,HttpResponse
 from django.forms import model_to_dict
 from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
@@ -77,11 +78,12 @@ def file_delete(request,project_id):
     delete_obj = models.Files.objects.filter(id=fid,project_id=request.tracer.project).first()
     if delete_obj.type == 2:
         # delete file in database, S3, release used space
+        print('delete file')
         request.tracer.project.use_space -= delete_obj.size
         request.tracer.project.save()
 
         #delete file in S3
-        aws.delete_file('zxcvfdgvc',request.tracer.project.key)
+        aws.delete_file('zxcvfdgvc',delete_obj.key)
 
         #delete file in DB
         delete_obj.delete()
@@ -116,7 +118,7 @@ def cos_credential(request,project_id):
     print(request.POST)
     checkFileList = json.loads(request.body.decode('utf-8'))
     per_file_limit = request.tracer.price_strategy.per_file_size * 1024 * 1024
-    total_limit = request.tracer.price_strategy.project_space * 1024 * 1024 * 1024
+    total_limit = request.tracer.price_strategy.project_space * 1024 * 1024 * 1024 - request.tracer.project.use_space
     tmptotal = 0
     for item in checkFileList:
         #拿到文件字节大小，单位B
@@ -155,7 +157,7 @@ def file_post(request,project_id):
             'name': instance.FileName,
             'size': instance.size,
             'username': instance.update_user.username,
-            'datetime': instance.update_datetime.strftime("%Y%m%d %H:%M"),
+            'datetime': instance.update_datetime.strftime("%b. %-d, %Y, %-I:%-M%p"),
             'download_url': reverse('file_download', kwargs={"project_id": project_id, 'file_id': instance.id})
             # 'file_type': instance.get_file_type_display()
         }
@@ -165,4 +167,16 @@ def file_post(request,project_id):
 
 
 def file_download(request,project_id,file_id):
-    pass
+    file_obj = models.Files.objects.filter(id=file_id,project_id=request.tracer.project).first()
+    res = requests.get(file_obj.path)
+
+    # 文件分块处理（适用于大文件）
+    data = res.iter_content()
+
+    # 设置content_type=application/octet-stream 用于提示下载框
+    response = HttpResponse(data, content_type="application/octet-stream")
+    from django.utils.encoding import escape_uri_path
+
+    # 设置响应头：中文件文件名转义
+    response['Content-Disposition'] = "attachment; filename={};".format(escape_uri_path(file_obj.FileName))
+    return response

@@ -93,7 +93,7 @@
                         <td>
                             {% if item.type == 2 %}
                                 <i class="fa fa-file" aria-hidden="true"></i>
-                                {{ item.name }}
+                                {{ item.FileName }}
                             {% else %}
                                 <a href="{% url 'file' project_id=request.tracer.project.id %}?folder={{ item.id }}">
                                     <i class="fa fa-folder" aria-hidden="true"></i>

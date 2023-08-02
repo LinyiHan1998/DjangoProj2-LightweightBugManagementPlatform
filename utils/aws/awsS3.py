@@ -80,9 +80,9 @@ class AwsS3():
         return response['Credentials']
 
 
-if __name__ == '__main__':
-    aws = AwsS3()
-    aws.cos_credential()
+# if __name__ == '__main__':
+#     aws = AwsS3()
+#     aws.cos_credential()
 #     file_keys = [{'Key':'0810ab40-fddb-48de-a438-17e1bbb7a80f.jpg'}]
 #     aws.delete_file("zxcvfdgvc",file_keys)
 # def usage_demo():

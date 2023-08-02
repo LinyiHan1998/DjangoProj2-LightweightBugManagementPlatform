@@ -55,7 +55,7 @@ class Project(models.Model):
     name = models.CharField(verbose_name='Project Name',max_length=32)
     description = models.CharField(verbose_name='Project Description',max_length=255,null=True,blank=True)
     color = models.SmallIntegerField(verbose_name='Color',choices=color_choices,default=1)
-    use_space = models.IntegerField(verbose_name='Project Used Space',default=0)
+    use_space = models.IntegerField(verbose_name='Project Used Space',default=0,help_text='Bytes')
     star = models.BooleanField(verbose_name='Star', default=False)
 
     bucket = models.CharField(verbose_name='cos bucket',max_length=128)
@@ -101,7 +101,7 @@ class Files(models.Model):
         (2,'Doc')
     )
     type = models.SmallIntegerField(verbose_name='type',choices=type_choices)
-    size = models.IntegerField(verbose_name='File Size',null=True,blank=True)
+    size = models.IntegerField(verbose_name='File Size',null=True,blank=True,help_text='Bytes')
 
     path = models.CharField(verbose_name='Path',max_length=255,null=True,blank=True)
 
