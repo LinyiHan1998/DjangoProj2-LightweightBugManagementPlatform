@@ -1,5 +1,366 @@
 {% extends 'web/layout/manage.html' %}
+{% load static %}
+{% block css %}
+    <link rel="stylesheet" href="{% static 'web/plugin/editor-md/css/editormd.min.css' %}">
+    <link rel="stylesheet" href="{% static 'web/plugin/bootsrtap-datepicker/css/datepicker.css' %}">
+    <link href="https://cdn.bootcdn.net/ajax/libs/bootstrap-select/1.13.18/css/bootstrap-select.min.css" rel="stylesheet">
+    <style>
+        .issues-list .number {
+            width: 100px;
+            text-align: right;
+        }
+
+        .issues-list .number a {
+            font-weight: 500;
+            padding: 0 10px;
+        }
+
+        .issues-list .issue .tags {
+            padding: 10px 0;
+        }
+
+        .issues-list .issue .tags span {
+            margin-right: 20px;
+            display: inline-block;
+            font-size: 12px;
+        }
+
+        .issues-list .issue .tags .type {
+            color: white;
+            padding: 1px 5px;
+            border-radius: 5px;
+            background-color: #dddddd;
+        }
+
+        .editormd {
+            margin-bottom: 0;
+        }
+
+        .pd-0 {
+            padding: 0 !important;
+        }
+
+        /* 筛选 */
+        .filter-area .item {
+            margin-bottom: 15px;
+        }
+
+        .filter-area .item .title {
+            padding: 5px 0;
+        }
+
+        .filter-area .item .check-list a {
+            text-decoration: none;
+            display: inline-block;
+            min-width: 65px;
+        }
+
+        .filter-area .item .check-list label {
+            font-weight: 200;
+            font-size: 13px;
+            margin-left: 3px;
+        }
+
+        .filter-area .item .check-list a:hover {
+            font-weight: 300;
+        }
+
+        .filter-area .item .check-list .cell {
+            margin-right: 10px;
+        }
+    </style>
+{% endblock %}
 
 {% block content %}
-    <h1> Issue</h1>
+    <div class="container clearfix" style="padding: 20px 0;">
+        <div class="col-sm-3">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <i class="fa fa-search" aria-hidden="true"></i>Filter
+                </div>
+                <div class="panel-body">
+                    choices
+                </div>
+            </div>
+        </div>
+        <div class="col-sm-9">
+            <div class="panel panel-default">
+                <div class="panel-heading">
+                    <i class="fa fa-search" aria-hidden="true"></i>Search
+                </div>
+                <div class="panel-body filter-area">
+                    <a class="btn btn-success btn-sm" data-toggle="modal" data-target="#addModal">Create Issue</a>
+                    <a class="btn btn-primary btn-sm">Invite member</a>
+                </div>
+                <!-- Table -->
+                <table class="table">
+                    <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>First Name</th>
+                        <th>Last Name</th>
+                        <th>Username</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    <tr>
+                        <th scope="row">1</th>
+                        <td>Mark</td>
+                        <td>Otto</td>
+                        <td>@mdo</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">2</th>
+                        <td>Jacob</td>
+                        <td>Thornton</td>
+                        <td>@fat</td>
+                    </tr>
+                    <tr>
+                        <th scope="row">3</th>
+                        <td>Larry</td>
+                        <td>the Bird</td>
+                        <td>@twitter</td>
+                    </tr>
+                    </tbody>
+                </table>
+
+            </div>
+            <nav aria-label="...">
+                <ul class="pagination" style="margin-top: 0;">
+                    <li class="disabled"><a href="#" aria-label="Previous"><span
+                            aria-hidden="true">&laquo;</span></a>
+                    </li>
+                    <li class="active"><a href="#">1 <span class="sr-only">(current)</span></a></li>
+                    ...
+                </ul>
+            </nav>
+
+        </div>
+
+        <div id="addModal" class="modal fade bs-example-modal-lg" tabindex="-1" role="dialog"
+             aria-labelledby="myLargeModalLabel">
+            <div class="modal-dialog modal-lg" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="hidden"><span
+                                aria-hidden="true">&times;</span></button>
+                        <h4 class="modal-title">Create Issue</h4>
+                    </div>
+                    <div class="modal-body" style="padding-right: 40px;">
+                        <form id="addForm" class="form-horizontal">
+                            {% csrf_token %}
+                            <div class="form-group">
+                                <label for="{{ form.issues_type.id_for_label }}"
+                                       class="col-md-2 control-label">{{ form.issues_type.label }}</label>
+                                <div class="col-md-10">
+                                    <div>
+                                        <div>
+                                            {{ form.issues_type }}
+                                        </div>
+                                        <div class="error-msg"></div>
+                                    </div>
+                                    <div class="error-msg"></div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="{{ form.subject.id_for_label }}"
+                                       class="col-md-2 control-label">{{ form.subject.label }}</label>
+                                <div class="col-md-10">
+                                    <div>
+                                        <div>
+                                            {{ form.subject }}
+                                        </div>
+                                        <div class="error-msg"></div>
+                                    </div>
+                                    <div class="error-msg"></div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="{{ form.module.id_for_label }}"
+                                       class="col-md-2 control-label">{{ form.module.label }}</label>
+                                <div class="col-md-10">
+                                    <div>
+                                        <div>
+                                            {{ form.module }}
+                                        </div>
+                                        <div class="error-msg"></div>
+                                    </div>
+                                    <div class="error-msg"></div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="{{ form.desc.id_for_label }}"
+                                       class="col-md-2 control-label">{{ form.desc.label }}</label>
+                                <div class="col-md-10">
+                                    <div>
+                                        <div id="editor">
+                                            {{ form.desc }}
+                                        </div>
+
+                                        <div class="error-msg"></div>
+                                    </div>
+                                    <div class="error-msg"></div>
+                                </div>
+                            </div>
+
+                            <div class="form-group clearfix">
+
+                                <div class="col-md-6 pd-0">
+                                    <label for="{{ form.status.id_for_label }}"
+                                           class="col-md-4 control-label">{{ form.status.label }}</label>
+                                    <div class="col-md-8 clearfix">
+                                        <div>
+                                            {{ form.status }}
+                                        </div>
+                                        <div class="error-msg"></div>
+
+                                    </div>
+                                </div>
+                                <div class="col-md-6 pd-0">
+                                    <label for=" {{ form.priority.id_for_label }}"
+                                           class="col-md-4 control-label">{{ form.priority.label }}</label>
+                                    <div class="col-md-8">
+                                        <div>
+                                            {{ form.priority }}
+                                        </div>
+                                        <div class="error-msg"></div>
+
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group clearfix">
+                                <div class="col-md-6 pd-0">
+                                    <label for="inputPassword3" class="col-md-4 control-label">Assign to</label>
+                                    <div class="col-md-8">
+                                        {{ form.assign }}
+                                        <div class="error-msg"></div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6 pd-0">
+                                    <label for="inputPassword3" class="col-md-4 control-label">CC</label>
+                                    <div class="col-md-8">
+                                        {{ form.attention }}
+                                        <div class="error-msg"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group clearfix">
+                                <div class="col-md-6 pd-0">
+                                    <label for="inputPassword3" class="col-md-4 control-label">Start Time</label>
+                                    <div class="col-md-8">
+
+                                        <div class="input-group">
+                                        <span class="input-group-addon" id="sizing-addon2">
+                                            <i class="fa fa-calendar" aria-hidden="true"></i>
+                                        </span>
+                                            {{ form.start_date }}
+                                        </div>
+                                        <span class="error-msg"></span>
+
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6 pd-0">
+                                    <label for="inputPassword3" class="col-md-4 control-label">Deadline</label>
+                                    <div class="col-md-8">
+
+                                        <div class="input-group">
+                                        <span class="input-group-addon" id="sizing-addon2">
+                                            <i class="fa fa-calendar" aria-hidden="true"></i>
+                                        </span>
+                                            {{ form.end_date }}
+                                        </div>
+                                        <span class="error-msg"></span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group clearfix">
+                                <div class="col-md-6 pd-0">
+                                    <label for="inputPassword3" class="col-md-4 control-label">Mode</label>
+                                    <div class="col-md-8">
+                                        <div>
+                                            {{ form.mode }}
+                                        </div>
+                                        <div class="error-msg"></div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6 pd-0">
+                                    <label for="inputPassword3" class="col-md-4 control-label">Parent Issue</label>
+                                    <div class="col-md-8">
+
+                                        {{ form.parent }}
+
+                                        <div class="error-msg"></div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </form>
+
+
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+                        <button type="button" class="btn btn-primary">Add</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block js %}
+    <script src="{% static 'web/plugin/editor-md/editormd.min.js' %}"></script>
+    <script src="{% static 'web/plugin/bootsrtap-datepicker/js/bootstrap-datepicker.js' %}"></script>
+    <script src="https://cdn.bootcdn.net/ajax/libs/bootstrap-select/1.13.18/js/bootstrap-select.min.js"></script>
+
+    <script type="text/javascript">
+        var WIKI_UPLOAD_URL = "{% url 'wiki_upload'  project_id=request.tracer.project.id%}"
+        $(function () {
+            bindBootStrapShownEvent();
+            initDatePicker();
+            initSelect2();
+
+        })
+
+
+        function bindBootStrapShownEvent() {
+            $('#addModal').on('shown.bs.modal', function (event) {
+                // 对话框弹出时，内容触发。
+                initEditorMd();
+
+            })
+        }
+        function initEditorMd() {
+
+            editormd('editor', {
+                placeholder: "Please type in content",
+                height: 300,
+                path: "{% static 'web/plugin/editor-md/lib/' %}",
+                imageUpload: true,
+                imageFormat: ["jpg", "jpeg", "png", "gif"],
+                imageUploadURL: WIKI_UPLOAD_URL
+            })
+        }
+        function initDatePicker(){
+            $('#id_start_date,#id_end_date').datepicker({
+                format: 'yyyy-mm-dd',
+                starDate:'0',
+                autoclose:true
+            });
+        }
+        function initSelect2() {
+            $('.select2').select2({}).on('select2:select', function (e) {
+                // 选中某一项触发
+                location.href = e.params.data.id;
+            }).on('select2:unselect', function (e) {
+                // 移除某一项触发
+                location.href = e.params.data.id;
+            });
+        }
+    </script>
 {% endblock %}

@@ -7,6 +7,9 @@ class UserInfo(models.Model):
     mobile_phone = models.CharField(verbose_name='mobile phone',max_length=32)
     password = models.CharField(verbose_name='password',max_length=32)
 
+    def __str__(self):
+        return self.username
+
     #price_stategy = models.ForeignKey(verbose_name='price_strategy',to='PriceStrategy',null=True,blank=True)
 
 class PriceStrategy(models.Model):
@@ -157,34 +160,34 @@ class Issues(models.Model):
 
     # 新建、处理中、已解决、已忽略、待反馈、已关闭、重新打开
     status_choices = (
-        (1, '新建'),
-        (2, '处理中'),
-        (3, '已解决'),
-        (4, '已忽略'),
-        (5, '待反馈'),
-        (6, '已关闭'),
-        (7, '重新打开'),
+        (1, 'Create'),
+        (2, 'Processing'),
+        (3, 'Finished'),
+        (4, 'Ignored'),
+        (5, 'Pending Feedback'),
+        (6, 'Closed'),
+        (7, 'Reopened'),
     )
-    status = models.SmallIntegerField(verbose_name='状态', choices=status_choices, default=1)
+    status = models.SmallIntegerField(verbose_name='Status', choices=status_choices, default=1)
 
-    assign = models.ForeignKey(verbose_name='指派', to='UserInfo', related_name='task', null=True, blank=True)
-    attention = models.ManyToManyField(verbose_name='关注者', to='UserInfo', related_name='observe', blank=True)
+    assign = models.ForeignKey(verbose_name='Assign', to='UserInfo', related_name='task', null=True, blank=True)
+    attention = models.ManyToManyField(verbose_name='CC', to='UserInfo', related_name='observe', blank=True)
 
-    start_date = models.DateField(verbose_name='开始时间', null=True, blank=True)
-    end_date = models.DateField(verbose_name='结束时间', null=True, blank=True)
+    start_date = models.DateField(verbose_name='Start Time', null=True, blank=True)
+    end_date = models.DateField(verbose_name='Deadline', null=True, blank=True)
     mode_choices = (
-        (1, '公开模式'),
-        (2, '隐私模式'),
+        (1, 'Public'),
+        (2, 'Private'),
     )
-    mode = models.SmallIntegerField(verbose_name='模式', choices=mode_choices, default=1)
+    mode = models.SmallIntegerField(verbose_name='Mode', choices=mode_choices, default=1)
 
-    parent = models.ForeignKey(verbose_name='父问题', to='self', related_name='child', null=True, blank=True,
+    parent = models.ForeignKey(verbose_name='Parent Issue', to='self', related_name='child', null=True, blank=True,
                                on_delete=models.SET_NULL)
 
-    creator = models.ForeignKey(verbose_name='创建者', to='UserInfo', related_name='create_problems')
+    creator = models.ForeignKey(verbose_name='Creator', to='UserInfo', related_name='create_problems')
 
-    create_datetime = models.DateTimeField(verbose_name='创建时间', auto_now_add=True)
-    latest_update_datetime = models.DateTimeField(verbose_name='最后更新时间', auto_now=True)
+    create_datetime = models.DateTimeField(verbose_name='Create Time', auto_now_add=True)
+    latest_update_datetime = models.DateTimeField(verbose_name='Last Update Time', auto_now=True)
 
     def __str__(self):
         return self.subject
