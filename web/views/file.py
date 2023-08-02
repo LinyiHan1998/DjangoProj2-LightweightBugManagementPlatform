@@ -1,7 +1,10 @@
+import json
 import boto3
 import logging
+
 from django.shortcuts import render
 from django.forms import model_to_dict
+from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 from django.http import JsonResponse
 
@@ -110,6 +113,20 @@ def file_delete(request,project_id):
 
 @csrf_exempt
 def cos_credential(request,project_id):
+    print(request.POST)
+    checkFileList = json.loads(request.body.decode('utf-8'))
+    per_file_limit = request.tracer.price_strategy.per_file_size * 1024 * 1024
+    total_limit = request.tracer.price_strategy.project_space * 1024 * 1024 * 1024
+    tmptotal = 0
+    for item in checkFileList:
+        #拿到文件字节大小，单位B
+        if item['size']>per_file_limit:
+            return JsonResponse({'status':False,'error':"File:{} exceeds size limit (limit{}M), please upgrade your VIP".format(item['name'],request.tracer.price_strategy.per_file_size)})
+        tmptotal += item['size']
+        if tmptotal > total_limit:
+            return JsonResponse({'status':False,'error':'Files exceed max size, please upgrade your VIP'})
+    print(checkFileList)
+
     aws = AwsS3()
     data=aws.cos_credential()
     print(data)
@@ -119,7 +136,32 @@ def cos_credential(request,project_id):
 def file_post(request,project_id):
     print('entering file post')
     print(request.POST)
-    pass
+    form = FileModelForm(request,data=request.POST)
+    print('form built')
+
+    if form.is_valid():
+        print(form)
+        data_dict = form.cleaned_data
+        data_dict.update({'project_id': request.tracer.project, 'type': 2, 'update_user': request.tracer.user})
+        print(data_dict)
+        instance = models.Files.objects.create(**data_dict)
+
+        # 项目的已使用空间：更新 (data_dict['file_size'])
+        request.tracer.project.use_space += data_dict['size']
+        request.tracer.project.save()
+
+        result = {
+            'id': instance.id,
+            'name': instance.FileName,
+            'size': instance.size,
+            'username': instance.update_user.username,
+            'datetime': instance.update_datetime.strftime("%Y%m%d %H:%M"),
+            'download_url': reverse('file_download', kwargs={"project_id": project_id, 'file_id': instance.id})
+            # 'file_type': instance.get_file_type_display()
+        }
+        return JsonResponse({'status': True, 'data': result})
+
+    return JsonResponse({'status': False, 'data': "File Error"})
 
 
 def file_download(request,project_id,file_id):

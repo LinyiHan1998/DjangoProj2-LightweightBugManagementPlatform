@@ -32,15 +32,13 @@ class FolderModelForm(BootstrapModelForm,forms.ModelForm):
         return FileName
 
 class FileModelForm(BootstrapModelForm,forms.ModelForm):
-    etag = forms.CharField(label='ETag')
-
     class Meta:
         model = models.Files
         exclude = ['project_id','type','update_user','update_datetime']
 
-        def __init__(self,request,*args,**kwargs):
-            super().__init__(*args,**kwargs)
-            self.request = request
-
-        def clean_path(self):
-            return "https://{}".format(self.cleaned_data.get('path'))
+    def __init__(self,request,*args,**kwargs):
+        super().__init__(*args,**kwargs)
+        self.request = request
+    def clean_path(self):
+        print('clean_path')
+        return "https://zxcvfdgvc.s3.us-west-1.amazonaws.com/{}".format(self.cleaned_data.get('path'))

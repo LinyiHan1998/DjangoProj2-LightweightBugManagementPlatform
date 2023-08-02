@@ -275,13 +275,14 @@
                     checkFileList.push({'name': fileObject.name, 'size': fileObject.size})
                 });
                 console.log(fileList, checkFileList)
+                // 把这些数据发送到django后台：Django后台进行容量的校验，如果没有问题则返回临时凭证；否则返回错误信息；
+
 
                 var credential = 0
-                // 把这些数据发送到django后台：Django后台进行容量的校验，如果没有问题则返回临时凭证；否则返回错误信息；
                 $.ajax({
                     url: COS_CREDENTIAL,
                     type: "POST",
-                    data: {fid: $(this).attr('fid')},
+                    data: JSON.stringify(checkFileList),
                     data_type: 'Json',
                     success: function (res) {
                         if (res.status) {
@@ -308,7 +309,7 @@
                                     Bucket: 'zxcvfdgvc',
                                     Key: key,
                                     Body: fileObject,
-                                    ACL: 'public-read'
+                                    ACL: 'public-read',
                                 };
 
                                 s3.putObject(params, function (err, data) {
@@ -316,16 +317,15 @@
                                         console.log('AWS S3 Upload Failed');
                                         tr.find('.progress-error').text('上传失败');
                                     } else {
-                                        console.log('AWS S3 Upload success')
+                                        console.log(data)
                                         // 上传成功，将本次上传的文件提交到后台并写入数据
                                         // 当前文件上传成功
                                         $.post(FILE_POST, {
-                                            name: fileName,
+                                            FileName: fileName,
                                             key: key,
-                                            file_size: fileSize,
+                                            size: fileSize,
                                             parent: CURRENT_FOLDER_ID,
-                                            etag: data.ETag,
-                                            file_path: data.Location
+                                            path: key
                                         }, function (res) {
                                             // 在数据库中写入成功，将已添加的数据在页面上动态展示。
                                             var newTr = $('#rowTpl').find('tr').clone();
@@ -340,12 +340,11 @@
                                             // 自己的进度删除
                                             tr.remove();
                                         })
-
                                     }
                                 });
-
                             })
-                            {#location.href = location.href;#}
+                        } else {
+                            alert(res.error);
                         }
                     }
                 })

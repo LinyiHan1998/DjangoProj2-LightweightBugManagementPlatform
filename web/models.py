@@ -22,8 +22,8 @@ class PriceStrategy(models.Model):
 
     project_num = models.PositiveIntegerField(verbose_name='Max Project Number')
     project_mem = models.PositiveIntegerField(verbose_name='Max Project Member')
-    project_space = models.PositiveIntegerField(verbose_name='Project Space')
-    per_file_size = models.PositiveIntegerField(verbose_name='Per file size (M)')
+    project_space = models.PositiveIntegerField(verbose_name='Project Space',help_text='G')
+    per_file_size = models.PositiveIntegerField(verbose_name='Per file size (M)',help_text='M')
 
     create_datetime = models.DateTimeField(verbose_name='Create Time',auto_now_add=True)
 class Transaction(models.Model):
