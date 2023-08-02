@@ -1,5 +1,5 @@
 from django.conf.urls import url,include
-from web.views import account, home, project, manage, wiki, file, setting
+from web.views import account, home, project, manage, wiki, file, setting, issue
 
 urlpatterns = [
     url(r'^register/', account.register, name='register'),
@@ -20,8 +20,10 @@ urlpatterns = [
     #project detail page
     url('^manage/(?P<project_id>\d+)/',include([
         url(r'^dashboard/$', manage.dashboard, name='dashboard'),
-        url(r'^issue/$', manage.issue, name='issue'),
         url(r'^statistics/$', manage.statistics, name='statistics'),
+
+        #issue
+        url(r'^issue/$', issue.issue, name='issue'),
 
         #files
         url(r'^file/$', file.file, name='file'),
@@ -40,9 +42,10 @@ urlpatterns = [
         url(r'^wiki/upload/$', wiki.wiki_upload, name='wiki_upload'),
 
 
-
+        #settings
         url(r'^setting/$', setting.setting, name='setting'),
         url(r'^setting/delete/$', setting.setting_delete, name='setting_delete'),
+
     ], None, None)),
 
 ]
