@@ -25,6 +25,7 @@ urlpatterns = [
         #issue
         url(r'^issue/$', issue.issue, name='issue'),
         url(r'^issue/detail/(?P<issues_id>\d+)/$', issue.issues_detail, name='issues_detail'),
+        url(r'^issue/record/(?P<issues_id>\d+)/$', issue.issues_record, name='issues_record'),
 
 
         #files

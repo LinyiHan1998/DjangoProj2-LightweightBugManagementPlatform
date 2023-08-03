@@ -195,3 +195,17 @@ class Issues(models.Model):
 
     def __str__(self):
         return self.subject
+
+class IssuesReply(models.Model):
+    reply_type_choices = (
+        (1,'Edit'),
+        (2,'Reply')
+    )
+    reply_type = models.SmallIntegerField(verbose_name='Reply Type',choices=reply_type_choices)
+
+    issues = models.ForeignKey(verbose_name='Issue',to='Issues')
+    content = models.TextField(verbose_name='Content')
+    creator = models.ForeignKey(verbose_name='Creator',to='UserInfo',related_name='create_reply')
+    create_datetime = models.DateTimeField(verbose_name='Create Time',auto_now_add=True)
+
+    reply = models.ForeignKey(verbose_name='reply',to='self',null=True,blank=True)

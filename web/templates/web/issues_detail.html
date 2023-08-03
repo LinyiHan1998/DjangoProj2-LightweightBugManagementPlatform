@@ -285,7 +285,7 @@
                     </div>
 
                     <a href="#commentText" class="reply">
-                        <i class="fa fa-commenting-o" aria-hidden="true"></i> 回复
+                        <i class="fa fa-commenting-o" aria-hidden="true"></i> Reply
                     </a>
 
                 </div>
@@ -304,10 +304,12 @@
 
     <script type="text/javascript">
         var WIKI_UPLOAD_URL = "{% url 'wiki_upload'  project_id=request.tracer.project.id%}"
+        var ISSUES_RECORD_API="{% url 'issues_record'  project_id=request.tracer.project.id issues_id=instance.id%}"
         $(function () {
 
             initDatePicker();
             initEditorMd();
+            initIssuesRecord();
 
         })
 
@@ -338,6 +340,51 @@
                 starDate: '0',
                 autoclose: true
             });
+        }
+        /*
+        问题评论的初始化
+         */
+        function initIssuesRecord() {
+            console.log('triggered Issues Record')
+
+            $.ajax({
+                url: ISSUES_RECORD_API,
+                type: "GET",
+                dataType: 'JSON',
+                success: function (res) {
+                    if (res.status) {
+                        $.each(res.data, function (index, item) {
+                            console.log(item)
+                            createRecordNode(item);
+                        })
+                    } else {
+                        console.log('Failed')
+
+                    }
+                }
+            })
+
+        }
+
+         /*
+        创建操作记录节点
+         */
+        function createRecordNode(nodeDict) {
+            var $item = $("#recordTemplate").find('.item').clone();
+            $item.find('.left-avatar').html(nodeDict.creator[0].toUpperCase());
+            $item.find('pre').html(nodeDict.content);
+            $item.find('.user').html(nodeDict.creator);
+            $item.find('.type').html(nodeDict.reply_type_text);
+            $item.find('.date').html(nodeDict.datetime);
+            $item.attr({id: nodeDict.id, username: nodeDict.creator});
+
+            if (nodeDict.parent_id) {
+                // 挂在谁下
+                $('#' + nodeDict.parent_id).children('.child').append($item);
+            } else {
+                // 根下
+                $('.comment-list').append($item);
+            }
         }
     </script>
 {% endblock %}
