@@ -4,8 +4,7 @@
 {% block css %}
     <link rel="stylesheet" href="{% static 'web/plugin/editor-md/css/editormd.min.css' %}">
     <link rel="stylesheet" href="{% static 'web/plugin/bootsrtap-datepicker/css/datepicker.css' %}">
-    <link href="https://cdn.bootcdn.net/ajax/libs/bootstrap-select/1.13.18/css/bootstrap-select.min.css"
-          rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'web/plugin/bootstrap-select-1.13.14/dist/css/bootstrap-select.min.css' %}">
     <style>
         .error-msg {
             color: red;
@@ -107,13 +106,13 @@
                             <td class="number">
                                 <i class="fa fa-circle text-{{ item.priority }}"></i>
                                 <a target="_blank"
-                                   href="#">{% string_just item.id %}</a>
+                                   href="{% url 'issues_detail' request.tracer.project.id item.id%}">{% string_just item.id %}</a>
 
                             </td>
                             <td class="issue">
                                 <div>
                                     <a target="_blank"
-                                       href="#">{{ item.subject }}</a>
+                                       href="{% url 'issues_detail' request.tracer.project.id item.id%}">{{ item.subject }}</a>
                                 </div>
                                 <div class="tags">
                                     <span class="type">
@@ -336,7 +335,7 @@
 {% block js %}
     <script src="{% static 'web/plugin/editor-md/editormd.min.js' %}"></script>
     <script src="{% static 'web/plugin/bootsrtap-datepicker/js/bootstrap-datepicker.js' %}"></script>
-    <script src="https://cdn.bootcdn.net/ajax/libs/bootstrap-select/1.13.18/js/bootstrap-select.min.js"></script>
+    <script src="{% static 'web/plugin/bootstrap-select-1.13.14/js/bootstrap-select.js' %}"></script>
 
     <script type="text/javascript">
         var WIKI_UPLOAD_URL = "{% url 'wiki_upload'  project_id=request.tracer.project.id%}"

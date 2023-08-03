@@ -27,5 +27,8 @@ def issue(request,project_id):
         return JsonResponse({'status':True})
     return JsonResponse({'status': False,'error':form.errors})
 
-def issues_detail(request,project_id):
-    pass
+def issues_detail(request,project_id,issues_id):
+    if request.method == 'GET':
+        instance = models.Issues.objects.filter(id=issues_id,project_id=project_id).first()
+        form = IssueModelForm(request,instance=instance)
+        return render(request,'web/issues_detail.html',{'form':form})
