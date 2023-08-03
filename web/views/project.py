@@ -38,7 +38,7 @@ def project_list(request):
         #验证通过
         form.instance.creator = request.tracer.user
         project_name = form.instance.name.lower()
-        #为项目创建一个桶
+        #1. 为项目创建一个桶
         bucket = "zxcvfdgvc"
         #s3 = AwsS3()
         #s3.my_create_bucket(bucket)
@@ -46,8 +46,14 @@ def project_list(request):
         #把桶和区域写入数据库
         form.instance.bucket = bucket
         form.instance.region = settings.REGION_NAME
-        #创建项目
-        form.save()
+        #2. 创建项目
+        instance = form.save()
+        #3. 项目初始化问题类型
+        issues_type_obj_list = []
+        for item in models.IssueType.PROJECT_INIT_LIST:
+            issues_type_obj_list.append(models.IssueType(project=instance,title=item))
+        models.IssueType.objects.bulk_create(issues_type_obj_list)
+
         return JsonResponse({'status': True})
     return JsonResponse({'status':False,'error':form.errors})
 
