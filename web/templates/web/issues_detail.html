@@ -304,12 +304,15 @@
 
     <script type="text/javascript">
         var WIKI_UPLOAD_URL = "{% url 'wiki_upload'  project_id=request.tracer.project.id%}"
-        var ISSUES_RECORD_API="{% url 'issues_record'  project_id=request.tracer.project.id issues_id=instance.id%}"
+        var ISSUES_RECORD_API = "{% url 'issues_record'  project_id=request.tracer.project.id issues_id=instance.id%}"
+
         $(function () {
 
             initDatePicker();
             initEditorMd();
             initIssuesRecord();
+            bindReply();
+            bindSubmit();
 
         })
 
@@ -329,11 +332,12 @@
                 toolbarCustomIcons: {
                     save: "<input type='button' value='Save' class='btn btn-success btn-sm' onclick='saveDesc();' />"
                 },
-                onload:function(){
+                onload: function () {
                     this.previewing();
                 }
             })
         }
+
         function initDatePicker() {
             $('#id_start_date,#id_end_date').datepicker({
                 format: 'yyyy-mm-dd',
@@ -341,6 +345,7 @@
                 autoclose: true
             });
         }
+
         /*
         问题评论的初始化
          */
@@ -366,9 +371,9 @@
 
         }
 
-         /*
-        创建操作记录节点
-         */
+        /*
+       创建操作记录节点
+        */
         function createRecordNode(nodeDict) {
             var $item = $("#recordTemplate").find('.item').clone();
             $item.find('.left-avatar').html(nodeDict.creator[0].toUpperCase());
@@ -385,6 +390,48 @@
                 // 根下
                 $('.comment-list').append($item);
             }
+        }
+
+        /*
+        回复问题
+         */
+        function bindReply() {
+            $('.comment-list').on('click', '.reply', function () {
+                var $item = $(this).parent().parent().parent();
+                var id = $item.attr('id');
+                var username = $item.attr('username');
+                $('#replyUser').removeClass('hide').attr('parent-id', id).children('span').text(username);
+            })
+        }
+
+        /*
+        点击评论
+         */
+        function bindSubmit() {
+            $('#btnSubmit').click(function () {
+                $("#commentText .error-msg").text("");
+                console.log('btnSubmit clicked')
+                $.ajax({
+                    url: ISSUES_RECORD_API,
+                    type: "POST",
+                    data: {content: $('#content').val(), reply: $("#replyUser").attr('parent-id')},
+                    dataType: "JSON",
+                    success: function (res) {
+                        if (res.status) {
+                            // 添加节点
+                            createRecordNode(res.data);
+                            // 输入的内容清空
+                            $('#content').val('');
+                            $('#replyUser').addClass('hide').removeAttr('parent-id').children('span').text("");
+                        } else {
+                            $.each(res.error, function (k, v) {
+                                $('#content').next('.error-msg').text(v[0]);
+                            })
+                        }
+                    }
+                })
+            })
+
         }
     </script>
 {% endblock %}
