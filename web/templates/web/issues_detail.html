@@ -38,7 +38,7 @@
             padding-left: 55px;
         }
 
-        .comment-area .error-msg {
+        .error-msg {
             color: red;
         }
 
@@ -51,6 +51,7 @@
             border-radius: 8px;
             cursor: pointer;
         }
+
 
         .editormd-fullscreen {
             z-index: 1001;
@@ -303,8 +304,10 @@
     <script src="{% static 'web/plugin/bootstrap-select-1.13.14/js/bootstrap-select.js' %}"></script>
 
     <script type="text/javascript">
-        var WIKI_UPLOAD_URL = "{% url 'wiki_upload'  project_id=request.tracer.project.id%}"
-        var ISSUES_RECORD_API = "{% url 'issues_record'  project_id=request.tracer.project.id issues_id=instance.id%}"
+        var WIKI_UPLOAD_URL = "{% url 'wiki_upload'  project_id=request.tracer.project.id%}";
+        var ISSUES_RECORD_API = "{% url 'issues_record'  project_id=request.tracer.project.id issues_id=instance.id%}";
+        var ISSUES_CHANGE_API = "{% url 'issues_change'  project_id=request.tracer.project.id issues_id=instance.id%}";
+        var EDITOR;
 
         $(function () {
 
@@ -313,12 +316,13 @@
             initIssuesRecord();
             bindReply();
             bindSubmit();
+            bindChangeIssues();
 
         })
 
         function initEditorMd() {
 
-            editormd('editor', {
+            EDITOR = editormd('editor', {
                 placeholder: "Please type in content",
                 height: 300,
                 path: "{% static 'web/plugin/editor-md/lib/' %}",
@@ -433,5 +437,39 @@
             })
 
         }
+
+        function bindChangeIssues(){
+            $('#editForm').find('.form-control').change(function(){
+                var postDict = {name:$(this).attr('name'),value:$(this).val()};
+                console.log(postDict)
+                postAjaxData(postDict);
+
+            });
+        }
+        function saveDesc() {
+            var postDict = {name: 'desc', value: EDITOR.getValue()};
+            postAjaxData(postDict);
+        }
+        function postAjaxData(postDict) {
+            $('#id_' + postDict.name).parent().next('.error-msg').text("");
+
+            $.ajax({
+                url: ISSUES_CHANGE_API,
+                type: "POST",
+                header: {
+                    "Content-Type": "application/json;charset=utf-8"
+                },
+                data: JSON.stringify(postDict),
+                dataType: "JSON",
+                success: function (res) {
+                    if (res.status) {
+                        createRecordNode(res.data);
+                    } else {
+                        $('#id_' + postDict.name).parent().next('.error-msg').text(res.error);
+                    }
+                }
+            })
+        }
+
     </script>
 {% endblock %}
