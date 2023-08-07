@@ -83,8 +83,26 @@
                 <div class="panel-heading">
                     <i class="fa fa-search" aria-hidden="true"></i>Filter
                 </div>
-                <div class="panel-body">
-                    choices
+                <div class="panel-body filter-area">
+                    <div class="item">
+                        <div class="title">Status</div>
+                        <div class="check-list">
+                            {% for item in status_filter %}
+                                {{ item }}
+                            {% endfor %}
+
+                        </div>
+                    </div>
+                <div class="item">
+                        <div class="title">Priority</div>
+                        <div class="check-list">
+                            {% for item in priority_filter %}
+                                {{ item }}
+                            {% endfor %}
+
+                        </div>
+                    </div>
+
                 </div>
             </div>
         </div>
@@ -102,17 +120,17 @@
 
                     <tbody class="issues-list">
                     {% for item in queryset %}
-                    <tr>
+                        <tr>
                             <td class="number">
                                 <i class="fa fa-circle text-{{ item.priority }}"></i>
                                 <a target="_blank"
-                                   href="{% url 'issues_detail' request.tracer.project.id item.id%}">{% string_just item.id %}</a>
+                                   href="{% url 'issues_detail' request.tracer.project.id item.id %}">{% string_just item.id %}</a>
 
                             </td>
                             <td class="issue">
                                 <div>
                                     <a target="_blank"
-                                       href="{% url 'issues_detail' request.tracer.project.id item.id%}">{{ item.subject }}</a>
+                                       href="{% url 'issues_detail' request.tracer.project.id item.id %}">{{ item.subject }}</a>
                                 </div>
                                 <div class="tags">
                                     <span class="type">
@@ -148,11 +166,11 @@
 
             </div>
             <nav aria-label="...">
-            <ul class="pagination">
-                {{ page_string }}
+                <ul class="pagination">
+                    {{ page_string }}
 
-            </ul>
-        </nav>
+                </ul>
+            </nav>
 
         </div>
 

@@ -155,7 +155,7 @@
 
                         <div class="form-group clearfix">
                             <div class="col-md-6 pd-0">
-                                <label for="inputPassword3" class="col-md-4 control-label">指派给</label>
+                                <label for="inputPassword3" class="col-md-4 control-label">Assign to</label>
                                 <div class="col-md-8">
                                     {{ form.assign }}
                                     <div class="error-msg"></div>
@@ -163,7 +163,7 @@
                             </div>
 
                             <div class="col-md-6 pd-0">
-                                <label for="inputPassword3" class="col-md-4 control-label">关注者</label>
+                                <label for="inputPassword3" class="col-md-4 control-label">Mention</label>
                                 <div class="col-md-8">
 
                                     {{ form.attention }}
@@ -175,7 +175,7 @@
 
                         <div class="form-group clearfix">
                             <div class="col-md-6 pd-0">
-                                <label for="inputPassword3" class="col-md-4 control-label">开始时间</label>
+                                <label for="inputPassword3" class="col-md-4 control-label">Start Date</label>
                                 <div class="col-md-8">
 
                                     <div class="input-group">
@@ -190,7 +190,7 @@
                             </div>
 
                             <div class="col-md-6 pd-0">
-                                <label for="inputPassword3" class="col-md-4 control-label">截止时间</label>
+                                <label for="inputPassword3" class="col-md-4 control-label">End Date</label>
                                 <div class="col-md-8">
 
                                     <div class="input-group">
@@ -205,7 +205,7 @@
                         </div>
                         <div class="form-group clearfix">
                             <div class="col-md-6 pd-0">
-                                <label for="inputPassword3" class="col-md-4 control-label">模式</label>
+                                <label for="inputPassword3" class="col-md-4 control-label">Mode</label>
                                 <div class="col-md-8">
                                     <div>
                                         {{ form.mode }}
@@ -215,7 +215,7 @@
                             </div>
 
                             <div class="col-md-6 pd-0">
-                                <label for="inputPassword3" class="col-md-4 control-label"> 父问题</label>
+                                <label for="inputPassword3" class="col-md-4 control-label">Parent Issue</label>
                                 <div class="col-md-8">
 
                                     {{ form.parent }}
@@ -363,7 +363,7 @@
                 success: function (res) {
                     if (res.status) {
                         $.each(res.data, function (index, item) {
-                            console.log(item)
+
                             createRecordNode(item);
                         })
                     } else {
@@ -440,14 +440,16 @@
 
         function bindChangeIssues(){
             $('#editForm').find('.form-control').change(function(){
+                if ($(this).attr('name')){
                 var postDict = {name:$(this).attr('name'),value:$(this).val()};
                 console.log(postDict)
-                postAjaxData(postDict);
+                postAjaxData(postDict);}
 
             });
         }
         function saveDesc() {
             var postDict = {name: 'desc', value: EDITOR.getValue()};
+            console.log(postDict)
             postAjaxData(postDict);
         }
         function postAjaxData(postDict) {

@@ -35,7 +35,7 @@ class IssueModelForm(BootstrapForm, forms.ModelForm):
         total_user_list.extend(project_user_list)
 
         self.fields['assign'].choices = [("", "Nothing selected"), ] + total_user_list
-        self.fields['attention'].choices = [("", "Nothing selected"), ] + total_user_list
+        self.fields['attention'].choices = total_user_list
 
         # 4.Parent Issue
         parent_list = [("", "Nothing selected"), ]
