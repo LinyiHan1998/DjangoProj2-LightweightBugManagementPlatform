@@ -362,6 +362,7 @@
             bindBootStrapShownEvent();
             bindAddSubmit();
             initDatePicker();
+            bindClickCheckFilter();
 
 
         })
@@ -423,6 +424,12 @@
                         }
                     }
                 })
+            });
+        }
+
+        function bindClickCheckFilter(){
+            $('.filter-area').find(':checkbox').click(function(){
+                location.href = $(this).parent().attr('href');
             });
         }
     </script>
