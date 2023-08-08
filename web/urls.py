@@ -27,6 +27,8 @@ urlpatterns = [
         url(r'^issue/detail/(?P<issues_id>\d+)/$', issue.issues_detail, name='issues_detail'),
         url(r'^issue/record/(?P<issues_id>\d+)/$', issue.issues_record, name='issues_record'),
         url(r'^issue/change/(?P<issues_id>\d+)/$', issue.issues_change, name='issues_change'),
+        url(r'^issue/invite/url/$', issue.invite_url, name='invite_url'),
+
 
 
         #files
@@ -51,5 +53,5 @@ urlpatterns = [
         url(r'^setting/delete/$', setting.setting_delete, name='setting_delete'),
 
     ], None, None)),
-
+        url(r'^invite/join/(?P<code>\w+)/$', issue.invite_join, name='invite_join'),
 ]

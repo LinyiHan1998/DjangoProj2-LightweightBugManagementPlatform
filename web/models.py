@@ -126,7 +126,6 @@ class Module(models.Model):
     def __str__(self):
         return self.title
 
-
 class IssueType(models.Model):
 
     color_choices = (
@@ -146,7 +145,6 @@ class IssueType(models.Model):
 
     def __str__(self):
         return self.title
-
 
 class Issues(models.Model):
     project = models.ForeignKey(verbose_name='Project', to='Project')
@@ -209,3 +207,18 @@ class IssuesReply(models.Model):
     create_datetime = models.DateTimeField(verbose_name='Create Time',auto_now_add=True)
 
     reply = models.ForeignKey(verbose_name='reply',to='self',null=True,blank=True)
+
+class ProjectInvite(models.Model):
+    project = models.ForeignKey(verbose_name='Project',to='Project')
+    code = models.CharField(verbose_name='Invite Code',max_length=64,unique=True)
+    count = models.PositiveIntegerField(verbose_name='Max Invites',null=True,blank=True,help_text='Empty means unlimited')
+    used_count = models.PositiveIntegerField(verbose_name='Invited People',default=0)
+    period_choices = (
+        (30,'30 Minutes'),
+        (60,'1 Hour'),
+        (300,'5 Hours'),
+        (1440,'24 Hours'),
+    )
+    period = models.IntegerField(verbose_name='Valid Till',choices=period_choices,default=1440)
+    create_datetime = models.DateTimeField(verbose_name='Create At',auto_now_add=True)
+    creator = models.ForeignKey(verbose_name='Creator',to='UserInfo',related_name='create_invite')

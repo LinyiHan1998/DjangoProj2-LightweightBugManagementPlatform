@@ -1,13 +1,17 @@
 import json
+import pytz
+import datetime
 
 from django.shortcuts import render
 from django.http import JsonResponse
+from django.urls import reverse
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.safestring import mark_safe
 
 from web import models
-from web.forms.issue import IssueModelForm, IssueReplyModelForm
+from web.forms.issue import IssueModelForm, IssueReplyModelForm, InviteModelForm
 from utils.pagination import Pagination
+from utils.encrypt import uid
 
 
 class CheckFilter(object):
@@ -43,9 +47,6 @@ class CheckFilter(object):
             html = tpl.format(url=url, ck=ck, text=text)
             # print(html)
             yield mark_safe(html)
-
-
-
 class SelectFilter(object):
     def __init__(self,name,datalist,request):
         self.name = name
@@ -76,8 +77,6 @@ class SelectFilter(object):
             html = "<option value='{url}' {selected}>{text}</option>".format(url=url,selected=selected,text=text)
             yield mark_safe(html)
         yield mark_safe("</select>")
-
-
 def issue(request, project_id):
     if request.method == 'GET':
         print(request.GET)
@@ -98,8 +97,10 @@ def issue(request, project_id):
         project_total_user = [(request.tracer.project.creator_id,request.tracer.project.creator.username)]
         project_join_user = models.ProjectUser.objects.filter(project_id = project_id).values_list('userId_id','userId__username')
         project_total_user.extend(project_join_user)
+        invite_form = InviteModelForm()
         context = {
             'form': form,
+            'invite_form':invite_form,
             "queryset": page.queryset,
             'page_string': page.html(),
             'filter_list':[
@@ -107,7 +108,7 @@ def issue(request, project_id):
                 {'title': 'Priority', 'filter': CheckFilter('priority', models.Issues.priority_choices, request)},
                 {'title': 'Issue Type', 'filter': CheckFilter('issues_type', models.IssueType.objects.filter(project_id=project_id).values_list('id','title'), request)},
                 {'title': 'Assign', 'filter': SelectFilter('assign', project_total_user, request)},
-                {'title': 'attention', 'filter': SelectFilter('attention', project_total_user, request)},
+                {'title': 'Attention', 'filter': SelectFilter('attention', project_total_user, request)},
             ],
         }
         return render(request, 'web/issue.html', context)
@@ -119,13 +120,10 @@ def issue(request, project_id):
         return JsonResponse({'status': True})
     return JsonResponse({'status': False, 'error': form.errors})
 
-
 def issues_detail(request, project_id, issues_id):
     instance = models.Issues.objects.filter(id=issues_id, project_id=project_id).first()
     form = IssueModelForm(request, instance=instance)
     return render(request, 'web/issues_detail.html', {'form': form, 'instance': instance})
-
-
 @csrf_exempt
 def issues_record(request, project_id, issues_id):
     if request.method == 'GET':
@@ -160,8 +158,6 @@ def issues_record(request, project_id, issues_id):
         }
         return JsonResponse({'status': True, 'data': info})
     return JsonResponse({'status': False, 'error': form.errors})
-
-
 @csrf_exempt
 def issues_change(request, project_id, issues_id):
     issue_obj = models.Issues.objects.filter(id=issues_id, project_id=project_id).first()
@@ -288,3 +284,62 @@ def issues_change(request, project_id, issues_id):
 
     # 2. 生成操作记录
     return JsonResponse({'status': False, 'data': 'Invalid action'})
+
+@csrf_exempt
+def invite_url(request,project_id):
+    form = InviteModelForm(data=request.POST)
+    if form.is_valid():
+        #1.创建随机验证码
+        #2.验证码保存到数据库
+        #3.限制只有创建者可以邀请
+        if request.tracer.user != request.tracer.project.creator:
+            form.add_error('period','Only Project Creator can invite new member')
+            return JsonResponse({'status':False,'error':form.errors})
+        random_invite_code = uid(request.tracer.user.email)
+        form.instance.project = request.tracer.project
+        form.instance.code = random_invite_code
+        form.instance.creator = request.tracer.user
+        form.save()
+        url_path = reverse('invite_join',kwargs={'code':random_invite_code})
+        url = '{scheme}://{host}{path}'.format(
+            scheme = request.scheme,
+            host = request.get_host(),
+            path=url_path)
+        return JsonResponse({'status':True,'data':url})
+    return JsonResponse({'status':False,'error':form.errors})
+
+
+def invite_join(request,code):
+    """访问邀请码"""
+    invite_obj = models.ProjectInvite.objects.filter(code=code).first()
+
+    if not invite_obj:
+        return render(request,'web/invite_join.html',{'error':'Invite Code does not exist'})
+
+    if invite_obj.project.creator == request.tracer.user:
+        return render(request,'web/invite_join.html',{'error':'Creator does not need to join project'})
+
+    if models.UserInfo.objects.filter(project=invite_obj.project,username=request.tracer.user).exists():
+        return render(request, 'web/invite_join.html', {'error': 'Your are already in this project'})
+    #允许的最多成员数量
+    max_mem = request.tracer.price_strategy.project_mem
+    # 允许的最多成员数量
+    cur_mem = models.ProjectUser.objects.filter(project=invite_obj.project).count()
+    cur_mem += 1
+    if cur_mem >= max_mem:
+        return render(request, 'web/invite_join.html', {'error': 'Member Number exceeds limit, please upgrade membership'})
+
+    current_datetime = pytz.UTC.localize(datetime.datetime.now())
+    limit_datetime = invite_obj.create_datetime + datetime.timedelta(minutes=invite_obj.period)
+    if current_datetime > limit_datetime:
+        return render(request, 'web/invite_join.html', {'error': 'Invite Code expired'})
+
+    if invite_obj.count:
+        if invite_obj.used_count >= invite_obj.count:
+            return render(request, 'web/invite_join.html',{'error':'Invite Code Chances are exhuasted'})
+        invite_obj.use_count += 1
+        invite_obj.save()
+
+    models.ProjectUser.objects.create(userId=request.tracer.user, project=invite_obj.project)
+    return render(request, 'web/invite_join.html', {'project': invite_obj.project})
+
