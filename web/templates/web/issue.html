@@ -4,6 +4,7 @@
 {% block css %}
     <link rel="stylesheet" href="{% static 'web/plugin/editor-md/css/editormd.min.css' %}">
     <link rel="stylesheet" href="{% static 'web/plugin/bootsrtap-datepicker/css/datepicker.css' %}">
+    <link rel="stylesheet" href="{% static 'web/plugin/select2/css/select2.min.css' %}">
     <link rel="stylesheet" href="{% static 'web/plugin/bootstrap-select-1.13.14/dist/css/bootstrap-select.min.css' %}">
     <style>
         .error-msg {
@@ -84,24 +85,18 @@
                     <i class="fa fa-search" aria-hidden="true"></i>Filter
                 </div>
                 <div class="panel-body filter-area">
+                {% for filter in filter_list %}
                     <div class="item">
-                        <div class="title">Status</div>
+                        <div class="title">{{ filter.title }}</div>
                         <div class="check-list">
-                            {% for item in status_filter %}
+                            {% for item in  filter.filter  %}
                                 {{ item }}
                             {% endfor %}
 
                         </div>
                     </div>
-                <div class="item">
-                        <div class="title">Priority</div>
-                        <div class="check-list">
-                            {% for item in priority_filter %}
-                                {{ item }}
-                            {% endfor %}
+                {% endfor %}
 
-                        </div>
-                    </div>
 
                 </div>
             </div>
@@ -354,6 +349,7 @@
     <script src="{% static 'web/plugin/editor-md/editormd.min.js' %}"></script>
     <script src="{% static 'web/plugin/bootsrtap-datepicker/js/bootstrap-datepicker.js' %}"></script>
     <script src="{% static 'web/plugin/bootstrap-select-1.13.14/js/bootstrap-select.js' %}"></script>
+    <script src="{% static 'web/plugin/select2/js/select2.min.js' %}"></script>
 
     <script type="text/javascript">
         var WIKI_UPLOAD_URL = "{% url 'wiki_upload'  project_id=request.tracer.project.id%}"
@@ -363,6 +359,7 @@
             bindAddSubmit();
             initDatePicker();
             bindClickCheckFilter();
+            initSelect2();
 
 
         })
@@ -427,8 +424,8 @@
             });
         }
 
-        function bindClickCheckFilter(){
-            $('.filter-area').find(':checkbox').click(function(){
+        function bindClickCheckFilter() {
+            $('.filter-area').find(':checkbox').click(function () {
                 location.href = $(this).parent().attr('href');
             });
         }

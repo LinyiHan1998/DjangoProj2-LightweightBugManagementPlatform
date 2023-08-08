@@ -45,12 +45,45 @@ class CheckFilter(object):
             yield mark_safe(html)
 
 
+
+class SelectFilter(object):
+    def __init__(self,name,datalist,request):
+        self.name = name
+        self.datalist = datalist
+        self.request = request
+    def __iter__(self):
+        yield mark_safe("<select class='select2' multiple='multiple' style='width:100%'>")
+        for data in self.datalist:
+            key = str(data[0])
+            text = data[1]
+            selected = ""
+            value_list = self.request.GET.getlist(self.name)
+            if key in value_list:
+                selected='selected'
+                value_list.remove(key)
+            else:
+                value_list.append(key)
+            query_dict = self.request.GET.copy()
+            query_dict._mutable=True
+            query_dict.setlist(self.name,value_list)
+            if 'page' in query_dict:
+                query_dict.pop('page')
+            param_url = query_dict.urlencode()
+            if param_url:
+                url = '{}?{}'.format(self.request.path_info,param_url)
+            else:
+                url = self.request.path_info
+            html = "<option value='{url}' {selected}>{text}</option>".format(url=url,selected=selected,text=text)
+            yield mark_safe(html)
+        yield mark_safe("</select>")
+
+
 def issue(request, project_id):
     if request.method == 'GET':
         print(request.GET)
         print(request.GET.getlist('status'))
 
-        allow_filter_name = ['issues_type', 'priority', 'status']
+        allow_filter_name = ['issues_type', 'priority', 'status','assign','attention','mode','parent']
         condition = {}
         for name in allow_filter_name:
             value_list = request.GET.getlist(name)
@@ -62,12 +95,20 @@ def issue(request, project_id):
 
         page = Pagination(request, issue_obj_list, '')
 
+        project_total_user = [(request.tracer.project.creator_id,request.tracer.project.creator.username)]
+        project_join_user = models.ProjectUser.objects.filter(project_id = project_id).values_list('userId_id','userId__username')
+        project_total_user.extend(project_join_user)
         context = {
             'form': form,
             "queryset": page.queryset,
             'page_string': page.html(),
-            'status_filter': CheckFilter('status', models.Issues.status_choices, request),
-            'priority_filter': CheckFilter('priority', models.Issues.priority_choices, request),
+            'filter_list':[
+                {'title': 'Status', 'filter':CheckFilter('status', models.Issues.status_choices, request)},
+                {'title': 'Priority', 'filter': CheckFilter('priority', models.Issues.priority_choices, request)},
+                {'title': 'Issue Type', 'filter': CheckFilter('issues_type', models.IssueType.objects.filter(project_id=project_id).values_list('id','title'), request)},
+                {'title': 'Assign', 'filter': SelectFilter('assign', project_total_user, request)},
+                {'title': 'attention', 'filter': SelectFilter('attention', project_total_user, request)},
+            ],
         }
         return render(request, 'web/issue.html', context)
     form = IssueModelForm(request, data=request.POST)
