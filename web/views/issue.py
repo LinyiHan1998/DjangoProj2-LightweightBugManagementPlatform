@@ -311,6 +311,7 @@ def invite_url(request,project_id):
 
 def invite_join(request,code):
     """访问邀请码"""
+    current_datetime = datetime.datetime.now()
     invite_obj = models.ProjectInvite.objects.filter(code=code).first()
 
     if not invite_obj:
@@ -322,14 +323,25 @@ def invite_join(request,code):
     if models.UserInfo.objects.filter(project=invite_obj.project,username=request.tracer.user).exists():
         return render(request, 'web/invite_join.html', {'error': 'Your are already in this project'})
     #允许的最多成员数量
-    max_mem = request.tracer.price_strategy.project_mem
+    #根据项目的创建者所购买额度判定
+    #获得交易记录后，判断交易是否已过期，若已过期则使用免费额度
+    max_transaction=models.Transaction.objects.filter(userId = invite_obj.project.creator).order_by('-id').first()
+    if max_transaction.price_strategy.category==1:
+        max_mem = max_transaction.price_strategy.project_mem
+    else:
+        if current_datetime < max_transaction.validUntil:
+            free_obj =  models.PriceStrategy.objects.filter(category=1).first()
+            max_mem =free_obj.project_mem
+        else:
+            max_mem = max_transaction.price_strategy.project_mem
+
     # 允许的最多成员数量
     cur_mem = models.ProjectUser.objects.filter(project=invite_obj.project).count()
     cur_mem += 1
     if cur_mem >= max_mem:
         return render(request, 'web/invite_join.html', {'error': 'Member Number exceeds limit, please upgrade membership'})
 
-    current_datetime = pytz.UTC.localize(datetime.datetime.now())
+
     limit_datetime = invite_obj.create_datetime + datetime.timedelta(minutes=invite_obj.period)
     if current_datetime > limit_datetime:
         return render(request, 'web/invite_join.html', {'error': 'Invite Code expired'})
@@ -341,5 +353,7 @@ def invite_join(request,code):
         invite_obj.save()
 
     models.ProjectUser.objects.create(userId=request.tracer.user, project=invite_obj.project)
+    invite_obj.project.join_count += 1
+    invite_obj.project.save()
     return render(request, 'web/invite_join.html', {'project': invite_obj.project})
 
