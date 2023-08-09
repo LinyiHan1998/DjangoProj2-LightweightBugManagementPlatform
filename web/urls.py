@@ -20,6 +20,7 @@ urlpatterns = [
     #project detail page
     url('^manage/(?P<project_id>\d+)/',include([
         url(r'^dashboard/$', dashboard.dashboard, name='dashboard'),
+        url(r'^dashboard/issues/count$', dashboard.issues_count, name='issues_count'),
         url(r'^statistics/$', manage.statistics, name='statistics'),
 
         #issue
