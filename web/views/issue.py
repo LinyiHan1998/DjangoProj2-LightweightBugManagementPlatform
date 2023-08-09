@@ -222,7 +222,7 @@ def issues_change(request, project_id, issues_id):
                 else:
                     project_user = models.ProjectUser.objects.filter(project_id=project_id, userId=value).first()
                     if project_user:
-                        instance = project_user.user
+                        instance = project_user.userId
                     else:
                         instance = None
                 if not instance:
