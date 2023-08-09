@@ -1,5 +1,5 @@
 from django.conf.urls import url,include
-from web.views import account, home, project, manage, wiki, file, setting, issue
+from web.views import account, home, project, manage, wiki, file, setting, issue,dashboard
 
 urlpatterns = [
     url(r'^register/', account.register, name='register'),
@@ -19,7 +19,7 @@ urlpatterns = [
 
     #project detail page
     url('^manage/(?P<project_id>\d+)/',include([
-        url(r'^dashboard/$', manage.dashboard, name='dashboard'),
+        url(r'^dashboard/$', dashboard.dashboard, name='dashboard'),
         url(r'^statistics/$', manage.statistics, name='statistics'),
 
         #issue
