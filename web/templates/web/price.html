@@ -1,0 +1,58 @@
+{% extends 'web/layout/basic.html' %}
+{% load static %}
+
+{% block title %} Plan {% endblock %}
+
+{% block css %}
+    <style>
+        .slogan {
+            font-size: 36px;
+            text-align: center;
+            margin: 50px 0;
+        }
+
+    </style>
+{% endblock %}
+
+{% block content %}
+    <div class="container">
+        <div class="slogan">Multiple Plans for Multiple Senario</div>
+        <div class="row">
+            {% for item in policy_list %}
+                <div class="col-md-4">
+                    <div class="panel panel-default">
+                        <div class="panel-heading" style="text-align: center;">{{ item.title }}</div>
+                        <div class="panel-body">
+
+                            <p style="text-align: center;font-size: 25px;">
+                                $ {{ item.price }} / Year
+                            </p>
+
+                        </div>
+                        <ul class="list-group">
+                            <li class="list-group-item">
+                                <form class="form-inline" method="get" action="{% url 'payment' policy_id=item.id %}">
+                                    <div class="form-group">
+                                        <div class="input-group">
+                                            <div class="input-group-addon">Amount</div>
+                                            <input type="number" name="number" value="1" class="form-control"
+                                                   placeholder="Purchased Amount">
+                                            <div class="input-group-btn">
+                                                <input type="submit" value="Purchase Now" class="btn btn-primary">
+                                            </div>
+                                        </div>
+                                    </div>
+                                </form>
+                            </li>
+                            <li class="list-group-item">Max Project counts：{{ item.project_num }}</li>
+                            <li class="list-group-item">Max Project space：{{ item.project_space }}G</li>
+                            <li class="list-group-item">Max File Size：{{ item.per_file_size }}M</li>
+                            <li class="list-group-item">Project Member：{{ item.project_mem }}</li>
+                        </ul>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+
+{% endblock %}

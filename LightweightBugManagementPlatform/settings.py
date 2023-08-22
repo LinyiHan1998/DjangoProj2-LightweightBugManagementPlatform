@@ -128,6 +128,9 @@ AWS_ACCESS_KEY_ID = "test"
 AWS_SECRET_ACCESS_KEY = "test"
 REGION_NAME = "test"
 
+PAYPAL_CLIENT_ID = "test"
+PAYPAL_CLIENT_SECRET = "test"
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
@@ -142,6 +145,7 @@ WHITE_REGEX_LIST = [
     "/login/username",
     "/image/code",
     "/index/",
+    "/price/"
 ]
 
 

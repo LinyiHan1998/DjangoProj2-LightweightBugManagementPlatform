@@ -33,7 +33,7 @@ class AuthMiddleware(MiddlewareMixin):
         transction_obj = models.Transaction.objects.filter(userId=user_obj,status=1).order_by('-id').first()
         cur_time = datetime.datetime.now()
 
-        if transction_obj.validUntil and transction_obj.validUntil < cur_time:
+        if transction_obj and transction_obj.validUntil and transction_obj.validUntil < cur_time:
             #expire
             transction_obj = models.Transaction.objects.filter(userId=user_obj, status=1,price_strategy__category=1).order_by('-id').first()
 

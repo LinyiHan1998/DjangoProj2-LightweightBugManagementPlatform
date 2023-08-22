@@ -11,6 +11,10 @@ urlpatterns = [
     url(r'^index/', home.index, name='index'),
     url(r'^logout/', account.logout, name='logout'),
 
+    url(r'^price/', home.price, name='price'),
+    url(r'^payment/(?P<policy_id>\d+)/', home.payment, name='payment'),
+    url(r'^pay/', home.pay, name='pay'),
+
     #Managing Projects
     url(r'^project/list', project.project_list, name='project_list'),
     url(r'^project/star/(?P<project_type>\w+)/(?P<project_id>\d+)/$', project.project_star, name='project_star'),

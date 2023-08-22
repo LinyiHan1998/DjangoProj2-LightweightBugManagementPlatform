@@ -1,0 +1,44 @@
+{% extends 'web/layout/basic.html' %}
+{% load static %}
+{% block title %} Order {% endblock %}
+
+{% block content %}
+
+    <div class="container">
+        <h2>Order Info (Expire in 30 mins)</h2>
+        <table class="table">
+            <thead>
+            <tr>
+                <th>Order</th>
+                <th>Price for one</th>
+                <th>Amt</th>
+                <th>Original Price</th>
+                <th>Deduction from original order</th>
+                <th>Actual Payment</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td>{{ policy_object.title }}</td>
+                <td>${{ policy_object.price }}</td>
+                <td>{{ number }}</td>
+                <td>${{ origin_price }}</td>
+                <td>${{ balance }}</td>
+                <td>${{ total_price }}</td>
+            </tr>
+            </tbody>
+        </table>
+        {% if transaction %}
+            <div class="alert alert-warning">
+                <div>Original Order Deducted：${{ balance }}</div>
+                <div style="margin-top: 10px">
+                    Originally ordered at {{ transaction.start_datetime }}
+                    ~ {{ transaction.end_datetime }}，actual paid${{ transaction.price }}
+                </div>
+            </div>
+        {% endif %}
+
+        <a class="btn btn-primary" href="{% url 'pay' %}">Pay Now</a>
+    </div>
+
+{% endblock %}
