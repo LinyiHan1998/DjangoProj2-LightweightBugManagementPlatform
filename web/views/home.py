@@ -5,7 +5,7 @@ from django.conf import settings
 
 
 import redis
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, HttpResponse
 from utils.encrypt import uid
 from web import models
 def index(request):
@@ -47,7 +47,7 @@ def payment(request,policy_id):
         'number':number,
         'origin_price':origin_price,
         'balance':round(balance,2),
-        'total_price':origin_price- round(balance,2)
+        'total_price':origin_price - round(balance,2)
     }
     r = redis.Redis(
         host='127.0.0.1',
@@ -96,13 +96,14 @@ def pay(request):
 
         # Redirect URLs
         "redirect_urls": {
-            "return_url": "http://127.0.0.1:8000/index/",
-            "cancel_url": "http://127.0.0.1:8000/index/"},
+            "return_url": "http://127.0.0.1:8000/pay/execute/",
+            "cancel_url": "http://127.0.0.1:8000/price/"},
 
         # Transaction
         # A transaction defines the contract of a
         # payment - what is the payment for and who
         # is fulfilling it.
+
         "transactions": [{
 
             # ItemList
@@ -116,15 +117,18 @@ def pay(request):
 
             # Amount
             # Let's you specify a payment amount.
+
             "amount": {
                 "total":context['total_price'],
                 "currency": "USD"},
-            "description": "This is the payment transaction description."}]})
+            "description": orderId}]})
 
     # Create Payment and return status
+
     if payment.create():
         print("Payment[%s] created successfully" % (payment.id))
         # Redirect the user to given approval url
+
         for link in payment.links:
             if link.rel == "approval_url":
                 # Convert to str to avoid google appengine unicode issue
@@ -132,8 +136,43 @@ def pay(request):
                 approval_url = str(link.href)
                 print("Redirect for approval: %s" % (approval_url))
                 return redirect(approval_url)
+
     else:
         print("Error while creating payment:")
         print(payment.error)
         url = ""
         return redirect(url)
+
+def execute(request):
+    print('enter execute')
+    paypalrestsdk.configure(settings.PAYPAL_CONF)
+    payid = request.GET.get('paymentId')
+    payerid = request.GET.get('PayerID')
+    print(payid)
+    print(payerid)
+
+    # ID of the payment. This ID is provided when creating payment.
+    payment = paypalrestsdk.Payment.find(payid)
+    #print(payment)
+
+    # PayerID is required to approve the payment.
+    if payment.execute({"payer_id": payerid}):  # return True or False
+        print("Payment[%s] execute successfully" % (payment.id))
+        orderId = payment['transactions'][0]['description']
+        transcation_obj = models.Transaction.objects.filter(orderId=orderId).first()
+
+        curTime= datetime.datetime.now()
+
+        validUntil = curTime + datetime.timedelta(365*transcation_obj.amtYear)
+
+        models.Transaction.objects.filter(orderId=orderId).update(
+            status=1,
+            startTime=curTime,
+            validUntil=validUntil
+        )
+
+        print(orderId)
+
+    else:
+        print(payment.error)
+    return HttpResponse("success")

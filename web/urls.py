@@ -13,7 +13,8 @@ urlpatterns = [
 
     url(r'^price/', home.price, name='price'),
     url(r'^payment/(?P<policy_id>\d+)/', home.payment, name='payment'),
-    url(r'^pay/', home.pay, name='pay'),
+    url(r'^pay/$', home.pay, name='pay'),
+    url(r'^pay/execute/$', home.execute, name='execute'),
 
     #Managing Projects
     url(r'^project/list', project.project_list, name='project_list'),
