@@ -16,10 +16,33 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.conf.urls import url,include
+from rest_framework_swagger.views import get_swagger_view
+
+from rest_framework import permissions
+from drf_yasg.views import get_schema_view
+from drf_yasg import openapi
+schema_view = get_schema_view(
+    openapi.Info(
+        title="API",
+        default_version='v1',
+        description="description",
+    ),
+    public=True,
+    permission_classes=(permissions.AllowAny,),
+)
 
 urlpatterns = [
     url(r'^admin/', admin.site.urls),
     url(r'^app01/',include('app01.urls',namespace='app01')),
     url(r'', include('web.urls')),
+    #url(r'^$', schema_view),
+
+    # For the JSON and YAML view
+    url(r'^swagger(?P<format>\.json|\.yaml)$', schema_view.without_ui(cache_timeout=0), name='schema-json'),
+
+    # For the Swagger UI view
+    url(r'^swagger/$', schema_view.with_ui('swagger', cache_timeout=0), name='schema-swagger-ui'),
 
 ]
+
+
