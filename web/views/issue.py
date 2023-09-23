@@ -13,6 +13,10 @@ from web.forms.issue import IssueModelForm, IssueReplyModelForm, InviteModelForm
 from utils.pagination import Pagination
 from utils.encrypt import uid
 
+from rest_framework.decorators import api_view,permission_classes
+from drf_yasg.utils import swagger_auto_schema
+from rest_framework.permissions import AllowAny
+
 
 class CheckFilter(object):
     def __init__(self, name, data_list, request):
@@ -77,6 +81,11 @@ class SelectFilter(object):
             html = "<option value='{url}' {selected}>{text}</option>".format(url=url,selected=selected,text=text)
             yield mark_safe(html)
         yield mark_safe("</select>")
+
+@swagger_auto_schema(method='get')
+@swagger_auto_schema(method='POST')
+@api_view(['GET', 'POST'])
+@permission_classes([AllowAny])
 def issue(request, project_id):
     if request.method == 'GET':
         print(request.GET)
@@ -120,11 +129,18 @@ def issue(request, project_id):
         return JsonResponse({'status': True})
     return JsonResponse({'status': False, 'error': form.errors})
 
+@swagger_auto_schema(method='get')
+@api_view(['GET'])
+@permission_classes([AllowAny])
 def issues_detail(request, project_id, issues_id):
     instance = models.Issues.objects.filter(id=issues_id, project_id=project_id).first()
     form = IssueModelForm(request, instance=instance)
     return render(request, 'web/issues_detail.html', {'form': form, 'instance': instance})
-@csrf_exempt
+
+@swagger_auto_schema(method='get')
+@swagger_auto_schema(method='POST')
+@api_view(['GET', 'POST'])
+@permission_classes([AllowAny])
 def issues_record(request, project_id, issues_id):
     if request.method == 'GET':
         reply_list = models.IssuesReply.objects.filter(issues_id=issues_id, issues__project=request.tracer.project)
@@ -158,6 +174,10 @@ def issues_record(request, project_id, issues_id):
         }
         return JsonResponse({'status': True, 'data': info})
     return JsonResponse({'status': False, 'error': form.errors})
+
+@swagger_auto_schema(method='get')
+@api_view(['GET'])
+@permission_classes([AllowAny])
 @csrf_exempt
 def issues_change(request, project_id, issues_id):
     issue_obj = models.Issues.objects.filter(id=issues_id, project_id=project_id).first()
@@ -285,6 +305,9 @@ def issues_change(request, project_id, issues_id):
     # 2. 生成操作记录
     return JsonResponse({'status': False, 'data': 'Invalid action'})
 
+@swagger_auto_schema(method='POST')
+@api_view(['POST'])
+@permission_classes([AllowAny])
 @csrf_exempt
 def invite_url(request,project_id):
     form = InviteModelForm(data=request.POST)
@@ -308,7 +331,9 @@ def invite_url(request,project_id):
         return JsonResponse({'status':True,'data':url})
     return JsonResponse({'status':False,'error':form.errors})
 
-
+@swagger_auto_schema(method='get')
+@api_view(['GET'])
+@permission_classes([AllowAny])
 def invite_join(request,code):
     """访问邀请码"""
     current_datetime = datetime.datetime.now()

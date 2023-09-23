@@ -8,13 +8,24 @@ import redis
 from django.shortcuts import render, redirect, HttpResponse
 from utils.encrypt import uid
 from web import models
+from rest_framework.decorators import api_view,permission_classes
+from drf_yasg.utils import swagger_auto_schema
+from rest_framework.permissions import AllowAny
+
+@swagger_auto_schema(method='get')
+@api_view(['GET'])
+@permission_classes([AllowAny])
 def index(request):
     return render(request,'web/index.html')
-
+@swagger_auto_schema(method='get')
+@api_view(['GET'])
+@permission_classes([AllowAny])
 def price(request):
     policy_list = models.PriceStrategy.objects.filter(category=2)
     return render(request,'web/price.html',{'policy_list':policy_list})
-
+@swagger_auto_schema(method='get')
+@api_view(['GET'])
+@permission_classes([AllowAny])
 def payment(request,policy_id):
     #1.价格策略
     policy_obj = models.PriceStrategy.objects.filter(id=policy_id,category=2).first()
@@ -59,6 +70,10 @@ def payment(request,policy_id):
 
     return render(request,'web/payment.html',context)
 
+
+@swagger_auto_schema(method='get')
+@api_view(['GET'])
+@permission_classes([AllowAny])
 def pay(request):
     ###generate order
     ###check user send info, in case user changed price
@@ -143,6 +158,9 @@ def pay(request):
         url = ""
         return redirect(url)
 
+@swagger_auto_schema(method='get')
+@api_view(['GET'])
+@permission_classes([AllowAny])
 def execute(request):
     print('enter execute')
     paypalrestsdk.configure(settings.PAYPAL_CONF)

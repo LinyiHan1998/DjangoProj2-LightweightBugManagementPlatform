@@ -2,11 +2,19 @@ from django.shortcuts import render
 from django.db.models import Count
 from django.http import JsonResponse
 from web import models
+from rest_framework.decorators import api_view,permission_classes
+from drf_yasg.utils import swagger_auto_schema
+from rest_framework.permissions import AllowAny
 
-
+@swagger_auto_schema(method='get')
+@api_view(['GET'])
+@permission_classes([AllowAny])
 def statistics(request,project_id):
     return render(request,'web/statistics.html')
 
+@swagger_auto_schema(method='get')
+@api_view(['GET'])
+@permission_classes([AllowAny])
 def statistics_priority(request,project_id):
     start = request.GET.get('start')
     end = request.GET.get('end')

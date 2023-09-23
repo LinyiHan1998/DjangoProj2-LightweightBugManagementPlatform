@@ -7,7 +7,13 @@ from django.http import JsonResponse
 
 from web import models
 
+from rest_framework.decorators import api_view,permission_classes
+from drf_yasg.utils import swagger_auto_schema
+from rest_framework.permissions import AllowAny
 
+@swagger_auto_schema(method='get')
+@api_view(['GET'])
+@permission_classes([AllowAny])
 def dashboard(request, project_id):
     status_dict = {}
     for key, text in models.Issues.status_choices:
@@ -29,6 +35,9 @@ def dashboard(request, project_id):
     return render(request, 'web/dashboard.html', context)
 
 
+@swagger_auto_schema(method='get')
+@api_view(['GET'])
+@permission_classes([AllowAny])
 def issues_count(request, project_id):
     today = datetime.datetime.now().date()
     date_dict = {}

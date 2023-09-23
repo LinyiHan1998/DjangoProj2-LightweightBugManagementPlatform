@@ -12,7 +12,14 @@ from django.http import JsonResponse
 from web import models
 from web.forms.file import FolderModelForm,FileModelForm
 from utils.aws.awsS3 import AwsS3
+from rest_framework.decorators import api_view,permission_classes
+from drf_yasg.utils import swagger_auto_schema
+from rest_framework.permissions import AllowAny
 
+@swagger_auto_schema(method='get')
+@swagger_auto_schema(method='POST')
+@api_view(['GET', 'POST'])
+@permission_classes([AllowAny])
 def file(request,project_id):
     print('Entering file')
     parent_obj = None
@@ -72,6 +79,9 @@ def file(request,project_id):
     print('Leaving file')
     return JsonResponse({'status':False,'error':form.errors})
 
+@swagger_auto_schema(method='GET', operation_description="Deleting file")
+@api_view([ 'GET'])
+@permission_classes([AllowAny])
 def file_delete(request,project_id):
     aws = AwsS3()
     fid = request.GET.get('fid', '')
@@ -113,6 +123,9 @@ def file_delete(request,project_id):
     delete_obj.delete()
     return JsonResponse({'status':True})
 
+@swagger_auto_schema(method='POST', operation_description="Obtianing temprary cos credential")
+@api_view([ 'POST'])
+@permission_classes([AllowAny])
 @csrf_exempt
 def cos_credential(request,project_id):
     print(request.POST)
@@ -134,6 +147,10 @@ def cos_credential(request,project_id):
     print(data)
     return JsonResponse({'status':True,'data':data})
 
+
+@swagger_auto_schema(method='POST')
+@api_view([ 'POST'])
+@permission_classes([AllowAny])
 @csrf_exempt
 def file_post(request,project_id):
     print('entering file post')
@@ -165,7 +182,9 @@ def file_post(request,project_id):
 
     return JsonResponse({'status': False, 'data': "File Error"})
 
-
+@swagger_auto_schema(method='GET')
+@api_view([ 'GET'])
+@permission_classes([AllowAny])
 def file_download(request,project_id,file_id):
     file_obj = models.Files.objects.filter(id=file_id,project_id=request.tracer.project).first()
     res = requests.get(file_obj.path)

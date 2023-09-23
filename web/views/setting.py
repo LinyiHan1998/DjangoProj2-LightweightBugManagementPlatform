@@ -3,8 +3,21 @@ from django.urls import reverse
 
 from web import models
 from utils.aws.awsS3 import AwsS3
+
+from rest_framework.decorators import api_view,permission_classes
+from drf_yasg.utils import swagger_auto_schema
+from rest_framework.permissions import AllowAny
+
+@swagger_auto_schema(method='get')
+@api_view(['GET'])
+@permission_classes([AllowAny])
 def setting(request,project_id):
     return render(request,'web/setting.html')
+
+@swagger_auto_schema(method='get')
+@swagger_auto_schema(method='POST')
+@api_view(['GET', 'POST'])
+@permission_classes([AllowAny])
 def setting_delete(request,project_id):
     if request.method == 'GET':
         return render(request,'web/setting_delete.html')

@@ -16,7 +16,14 @@ from utils.aws.awsSNS import SnsWrapper
 from utils.code import check_code
 from web import models
 
+from rest_framework.decorators import api_view,permission_classes
+from drf_yasg.utils import swagger_auto_schema
+from rest_framework.permissions import AllowAny
 
+@swagger_auto_schema(method='get')
+@swagger_auto_schema(method='POST')
+@api_view(['GET', 'POST'])
+@permission_classes([AllowAny])
 @csrf_exempt
 def register(request):
     if request.method =='GET':
@@ -43,6 +50,9 @@ def register(request):
     json_string = json.dumps(data_dict, ensure_ascii=False)
     return HttpResponse(json_string)
 
+@swagger_auto_schema(method='get')
+@api_view(['GET'])
+@permission_classes([AllowAny])
 @csrf_exempt
 def send_sms(request):
     print(request.GET.get('email'))
@@ -73,7 +83,9 @@ def send_sms(request):
     }
     return JsonResponse(data_dict)
 
-
+@swagger_auto_schema(method='get')
+@api_view(['GET'])
+@permission_classes([AllowAny])
 def login_send_sms(request):
     print(request.GET.get('email'))
     form = LoginSmsForm(data=request.GET)
@@ -103,6 +115,10 @@ def login_send_sms(request):
     }
     return JsonResponse(data_dict)
 
+@swagger_auto_schema(method='get')
+@swagger_auto_schema(method='POST')
+@api_view(['GET', 'POST'])
+@permission_classes([AllowAny])
 @csrf_exempt
 def login_sms(request):
     if request.method == 'GET':
@@ -117,7 +133,10 @@ def login_sms(request):
         return JsonResponse({'status':True,'data':'/register/'})
     return JsonResponse({'status':False,'error':form.errors})
 
-
+@swagger_auto_schema(method='get')
+@swagger_auto_schema(method='POST')
+@api_view(['GET', 'POST'])
+@permission_classes([AllowAny])
 def login(request):
     if request.method =='GET':
         form = LoginUserForm(request)
@@ -135,6 +154,9 @@ def login(request):
         form.add_error('username','incorrect username and password')
     return render(request,'web/login.html',{'form':form})
 
+@swagger_auto_schema(method='get')
+@api_view(['GET'])
+@permission_classes([AllowAny])
 def image_code(request):
     image_obj,code = check_code()
     request.session['image_code'] = code
@@ -144,6 +166,10 @@ def image_code(request):
 
 
     return HttpResponse(stream.getvalue())
+
+@swagger_auto_schema(method='get')
+@api_view(['GET'])
+@permission_classes([AllowAny])
 def logout(request):
     request.session.flush()
     return redirect('index')

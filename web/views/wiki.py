@@ -7,7 +7,13 @@ from utils.aws.awsS3 import AwsS3
 from web.forms.wiki import WikiModelForm
 from web import models
 
+from rest_framework.decorators import api_view,permission_classes
+from drf_yasg.utils import swagger_auto_schema
+from rest_framework.permissions import AllowAny
 
+@swagger_auto_schema(method='get')
+@api_view(['GET'])
+@permission_classes([AllowAny])
 def wiki(request,project_id):
     wiki_id = request.GET.get('wiki_id')
     if not wiki_id or not wiki_id.isdecimal():
@@ -15,6 +21,10 @@ def wiki(request,project_id):
     wiki_obj = models.Wiki.objects.filter(id=wiki_id,project_id=project_id).first()
     return render(request,'web/wiki.html',{'wiki_obj':wiki_obj})
 
+@swagger_auto_schema(method='get')
+@swagger_auto_schema(method='POST')
+@api_view(['GET', 'POST'])
+@permission_classes([AllowAny])
 def wiki_add(request,project_id):
     if request.method =='GET':
         form = WikiModelForm(request)
@@ -31,18 +41,29 @@ def wiki_add(request,project_id):
         url = reverse('wiki',kwargs={'project_id':project_id})
         return redirect(url)
 
+
+@swagger_auto_schema(method='get')
+@api_view(['GET'])
+@permission_classes([AllowAny])
 def wiki_catalog(request,project_id):
     print(1)
     data = models.Wiki.objects.filter(project_id=project_id).values("id","title","parent_id").order_by('depth','id')
     print(data)
     return JsonResponse({'status':True,'data':list(data)})
 
+@swagger_auto_schema(method='get')
+@api_view(['GET'])
+@permission_classes([AllowAny])
 def wiki_delete(request,project_id,wiki_id):
     models.Wiki.objects.filter(id=wiki_id,project_id=project_id).first().delete()
 
     url = reverse('wiki',kwargs={'project_id':project_id})
     return redirect(url)
 
+@swagger_auto_schema(method='get')
+@swagger_auto_schema(method='POST')
+@api_view(['GET', 'POST'])
+@permission_classes([AllowAny])
 def wiki_edit(request,project_id,wiki_id):
 
     wiki_obj = models.Wiki.objects.filter(project_id=project_id,id=wiki_id).first()
@@ -60,7 +81,9 @@ def wiki_edit(request,project_id,wiki_id):
         preview_url = "{0}?wiki_id={1}".format(url,wiki_id)
         return redirect(preview_url)
 
-
+@swagger_auto_schema(method='get')
+@api_view(['GET'])
+@permission_classes([AllowAny])
 @csrf_exempt
 def wiki_upload(request,project_id):
     res_list = {

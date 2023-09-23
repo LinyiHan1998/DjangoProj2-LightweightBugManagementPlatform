@@ -5,7 +5,14 @@ from django.http import JsonResponse
 from web.forms.project import ProjectModelForm
 from web import models
 from utils.aws.awsS3 import AwsS3
+from rest_framework.decorators import api_view,permission_classes
+from drf_yasg.utils import swagger_auto_schema
+from rest_framework.permissions import AllowAny
 
+@swagger_auto_schema(method='get')
+@swagger_auto_schema(method='POST')
+@api_view(['GET', 'POST'])
+@permission_classes([AllowAny])
 def project_list(request):
     if request.method =='GET':
         form = ProjectModelForm(request)
@@ -57,6 +64,9 @@ def project_list(request):
         return JsonResponse({'status': True})
     return JsonResponse({'status':False,'error':form.errors})
 
+@swagger_auto_schema(method='get')
+@api_view(['GET'])
+@permission_classes([AllowAny])
 def project_star(request,project_type,project_id):
     if project_type == 'my':
         models.Project.objects.filter(id=project_id,creator=request.tracer.user).update(star=True)
@@ -66,6 +76,9 @@ def project_star(request,project_type,project_id):
         return redirect('project_list')
     return HttpResponse('Error')
 
+@swagger_auto_schema(method='get')
+@api_view(['GET'])
+@permission_classes([AllowAny])
 def project_unstar(request,project_type,project_id):
     if project_type == 'my':
         models.Project.objects.filter(id=project_id, creator=request.tracer.user).update(star=False)

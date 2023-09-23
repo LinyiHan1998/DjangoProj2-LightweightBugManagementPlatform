@@ -71,8 +71,9 @@ class LoginSmsForm(Bootstrap.BootstrapForm):
             raise ValidationError('Email does not exists')
         return email
 class LoginForm(Bootstrap.BootstrapForm):
+    bootstrap_class_exclude = ['code']
     email = forms.CharField(label='Email', validators=[RegexValidator('^[a-zA-Z0-9_.-]+@[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)*\.[a-zA-Z0-9]{2,6}$', 'Invalid Email'), ])
-    code = forms.CharField(label='Verify Code',widget=forms.TextInput())
+    #code = forms.CharField(label='Verify Code',widget=forms.TextInput())
 
     def clean_email(self):
         email = self.cleaned_data.get("email")
@@ -80,25 +81,26 @@ class LoginForm(Bootstrap.BootstrapForm):
         if not exists:
             raise ValidationError("Email doesn't exists")
         return email
-    def clean_code(self):
-        r = redis.Redis(
-            host='127.0.0.1',
-            port=6379
-        )
-        if self.cleaned_data.get("email") is None:
-            raise ValidationError("Email does not exists")
-        code = str(r.get(self.cleaned_data.get("email")), 'utf-8')
-        print(self.cleaned_data.get("code"))
-        print(code)
-        if code != self.cleaned_data.get("code"):
-            raise ValidationError("Code doesn't match")
-        return self.cleaned_data.get("code")
+    # def clean_code(self):
+    #     r = redis.Redis(
+    #         host='127.0.0.1',
+    #         port=6379
+    #     )
+    #     if self.cleaned_data.get("email") is None:
+    #         raise ValidationError("Email does not exists")
+    #     code = str(r.get(self.cleaned_data.get("email")), 'utf-8')
+    #     print(self.cleaned_data.get("code"))
+    #     print(code)
+    #     if code != self.cleaned_data.get("code"):
+    #         raise ValidationError("Code doesn't match")
+    #     return self.cleaned_data.get("code")
 
 
 class LoginUserForm(Bootstrap.BootstrapForm):
+    bootstrap_class_exclude = ['code']
     username = forms.CharField(label='Username or Email')
     password = forms.CharField(label='Password',widget=forms.PasswordInput())
-    code = forms.CharField(label='Verify Code', widget=forms.TextInput())
+    #code = forms.CharField(label='Verify Code', widget=forms.TextInput())
 
     def __init__(self, request, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -109,11 +111,11 @@ class LoginUserForm(Bootstrap.BootstrapForm):
 
         return pwd
 
-    def clean_code(self):
-        code = self.cleaned_data.get("code")
-        session_code = self.request.session["image_code"]
-        if not session_code:
-            raise ValidationError("Code expired")
-        if code.strip().upper() != session_code.strip().upper():
-            raise ValidationError("Incorrect Code")
-        return code
+    # def clean_code(self):
+    #     code = self.cleaned_data.get("code")
+    #     session_code = self.request.session["image_code"]
+    #     if not session_code:
+    #         raise ValidationError("Code expired")
+    #     if code.strip().upper() != session_code.strip().upper():
+    #         raise ValidationError("Incorrect Code")
+    #     return code
